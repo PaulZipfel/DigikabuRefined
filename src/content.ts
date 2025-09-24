@@ -538,6 +538,18 @@ class DigikabuEnhancer {
           active: this.isActive,
           initialized: this.isInitialized
         });
+      } else if (message.action === 'setAutoLogin') {
+        const contentWindow = window as any;
+        if (contentWindow.digikabuAutoLogin) {
+          contentWindow.digikabuAutoLogin.enableAutoLogin(message.enabled);
+        }
+        sendResponse({ success: true });
+      } else if (message.action === 'clearCredentials') {
+        const contentWindow = window as any;
+        if (contentWindow.digikabuAutoLogin) {
+          contentWindow.digikabuAutoLogin.clearStoredCredentials();
+        }
+        sendResponse({ success: true });
       }
       
       return true;
@@ -545,10 +557,10 @@ class DigikabuEnhancer {
   }
 }
 
-const windowAny = window as any;
+const contentWindow = window as any;
 
-if (!windowAny.digikabuEnhancerLoaded) {
-  windowAny.digikabuEnhancerLoaded = true;
+if (!contentWindow.digikabuEnhancerLoaded) {
+  contentWindow.digikabuEnhancerLoaded = true;
   
   function initDigikabuEnhancer() {
     try {

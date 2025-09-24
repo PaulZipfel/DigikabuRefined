@@ -11,7 +11,7 @@
 
     body {
       width: 380px;
-      height: 500px;
+      height: 550px;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       overflow: hidden;
@@ -81,7 +81,7 @@
 
     .header {
       text-align: center;
-      margin-bottom: 35px;
+      margin-bottom: 30px;
     }
 
     .title {
@@ -98,15 +98,15 @@
       font-weight: 400;
     }
 
-    .theme-section {
-      margin-bottom: 25px;
+    .section {
+      margin-bottom: 20px;
     }
 
     .section-title {
       color: rgba(255, 255, 255, 0.9);
       font-size: 14px;
       font-weight: 500;
-      margin-bottom: 18px;
+      margin-bottom: 15px;
       text-align: center;
       letter-spacing: 0.5px;
     }
@@ -114,14 +114,14 @@
     .theme-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 12px;
+      gap: 10px;
     }
 
     .theme-option {
       background: rgba(255, 255, 255, 0.12);
       border: 2px solid rgba(255, 255, 255, 0.2);
       border-radius: 16px;
-      padding: 16px 20px;
+      padding: 12px 16px;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
@@ -160,10 +160,10 @@
     }
 
     .theme-preview {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      margin-right: 15px;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      margin-right: 12px;
       border: 2px solid rgba(255, 255, 255, 0.3);
       position: relative;
       overflow: hidden;
@@ -187,23 +187,101 @@
 
     .theme-name {
       color: rgba(255, 255, 255, 0.95);
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 500;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .theme-desc {
       color: rgba(255, 255, 255, 0.6);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 400;
     }
 
-    .status {
-      margin-top: 20px;
-      padding: 12px 16px;
+    .autologin-section {
+      background: rgba(255, 255, 255, 0.1);
       border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .autologin-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .toggle-label {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 50px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-switch.active {
+      background: rgba(76, 175, 80, 0.7);
+    }
+
+    .toggle-slider {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle-switch.active .toggle-slider {
+      transform: translateX(26px);
+    }
+
+    .autologin-info {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 11px;
+      line-height: 1.4;
+      margin-top: 8px;
       text-align: center;
-      font-size: 13px;
+    }
+
+    .security-note {
+      background: rgba(76, 175, 80, 0.15);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      border-radius: 8px;
+      padding: 8px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .security-note.visible {
+      display: block;
+    }
+
+    .security-note-text {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 10px;
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    .status {
+      margin-top: 15px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 12px;
       font-weight: 500;
       transition: all 0.3s ease;
       opacity: 0;
@@ -227,6 +305,12 @@
       border: 1px solid rgba(244, 67, 54, 0.3);
     }
 
+    .status.info {
+      background: rgba(33, 150, 243, 0.2);
+      color: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(33, 150, 243, 0.3);
+    }
+
     .ripple {
       position: absolute;
       border-radius: 50%;
@@ -243,8 +327,8 @@
     }
 
     .loading {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       border: 2px solid rgba(255, 255, 255, 0.3);
       border-top: 2px solid rgba(255, 255, 255, 0.8);
       border-radius: 50%;
@@ -271,7 +355,7 @@
       <p class="subtitle">Theme Enhancer</p>
     </div>
 
-    <div class="theme-section">
+    <div class="section">
       <h3 class="section-title">Wähle dein Theme</h3>
       <div class="theme-grid">
         <button class="theme-option active" data-theme="standard">
@@ -297,6 +381,25 @@
             <div class="theme-desc">Elegantes Blau-Theme</div>
           </div>
         </button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="autologin-section">
+        <div class="autologin-toggle">
+          <span class="toggle-label">Auto-Login</span>
+          <div class="toggle-switch" id="autologin-toggle">
+            <div class="toggle-slider"></div>
+          </div>
+        </div>
+        <div class="autologin-info">
+          Automatisches Einloggen auf digikabu.de
+        </div>
+        <div class="security-note" id="security-note">
+          <div class="security-note-text">
+            🔒 Deine Login-Daten werden sicher und verschlüsselt lokal gespeichert
+          </div>
+        </div>
       </div>
     </div>
 
