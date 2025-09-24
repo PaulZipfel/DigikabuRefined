@@ -159,21 +159,32 @@ class DigikabuEnhancer {
         }
     }
     addTimeDisplay() {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
         this.removeTimeDisplay();
         const currentUrl = window.location.href;
         let targetElement = null;
         let insertPosition = 'after';
         let position = null;
         if (currentUrl.includes('/Main')) {
-            const forms = Array.from(document.querySelectorAll('form[method="get"][action="/Main"]'));
-            for (const form of forms) {
-                const centerBlock = form.querySelector('.center-block');
-                if (centerBlock && (((_a = centerBlock.textContent) === null || _a === void 0 ? void 0 : _a.includes('Mo,')) || ((_b = centerBlock === null || centerBlock === void 0 ? void 0 : centerBlock.textContent) === null || _b === void 0 ? void 0 : _b.includes('Di,')) || ((_c = centerBlock === null || centerBlock === void 0 ? void 0 : centerBlock.textContent) === null || _c === void 0 ? void 0 : _c.includes('Mi,')) || ((_d = centerBlock === null || centerBlock === void 0 ? void 0 : centerBlock.textContent) === null || _d === void 0 ? void 0 : _d.includes('Do,')) || ((_e = centerBlock === null || centerBlock === void 0 ? void 0 : centerBlock.textContent) === null || _e === void 0 ? void 0 : _e.includes('Fr,')) || ((_f = centerBlock === null || centerBlock === void 0 ? void 0 : centerBlock.textContent) === null || _f === void 0 ? void 0 : _f.includes('Sa,')) || ((_g = centerBlock === null || centerBlock === void 0 ? void 0 : centerBlock.textContent) === null || _g === void 0 ? void 0 : _g.includes('So,')))) {
-                    targetElement = form;
-                    insertPosition = 'after';
+            const h3Elements = Array.from(document.querySelectorAll('h3'));
+            for (const h3 of h3Elements) {
+                if ((_a = h3.textContent) === null || _a === void 0 ? void 0 : _a.includes('Aktuelle Termine')) {
+                    targetElement = h3;
+                    insertPosition = 'inside';
                     position = 'main';
                     break;
+                }
+            }
+            if (!targetElement) {
+                const forms = Array.from(document.querySelectorAll('form[method="get"][action="/Main"]'));
+                for (const form of forms) {
+                    const centerBlock = form.querySelector('.center-block');
+                    if (centerBlock && (((_b = centerBlock.textContent) === null || _b === void 0 ? void 0 : _b.includes('Mo,')) || ((_c = centerBlock === null || centerBlock === void 0 ? void 0 : centerBlock.textContent) === null || _c === void 0 ? void 0 : _c.includes('Di,')) || ((_d = centerBlock === null || centerBlock === void 0 ? void 0 : centerBlock.textContent) === null || _d === void 0 ? void 0 : _d.includes('Mi,')) || ((_e = centerBlock === null || centerBlock === void 0 ? void 0 : centerBlock.textContent) === null || _e === void 0 ? void 0 : _e.includes('Do,')) || ((_f = centerBlock === null || centerBlock === void 0 ? void 0 : centerBlock.textContent) === null || _f === void 0 ? void 0 : _f.includes('Fr,')) || ((_g = centerBlock === null || centerBlock === void 0 ? void 0 : centerBlock.textContent) === null || _g === void 0 ? void 0 : _g.includes('Sa,')) || ((_h = centerBlock === null || centerBlock === void 0 ? void 0 : centerBlock.textContent) === null || _h === void 0 ? void 0 : _h.includes('So,')))) {
+                        targetElement = form;
+                        insertPosition = 'after';
+                        position = 'main';
+                        break;
+                    }
                 }
             }
         }
@@ -192,7 +203,10 @@ class DigikabuEnhancer {
         timeDisplay.className = `digikabu-time-display digikabu-time-display-${position}`;
         this.injectTimeDisplayStyles();
         if (insertPosition === 'after') {
-            (_h = targetElement.parentNode) === null || _h === void 0 ? void 0 : _h.insertBefore(timeDisplay, targetElement.nextSibling);
+            (_j = targetElement.parentNode) === null || _j === void 0 ? void 0 : _j.insertBefore(timeDisplay, targetElement.nextSibling);
+        }
+        else if (insertPosition === 'inside' && targetElement.tagName === 'H3') {
+            (_k = targetElement.parentNode) === null || _k === void 0 ? void 0 : _k.insertBefore(timeDisplay, targetElement);
         }
         else {
             targetElement.appendChild(timeDisplay);
@@ -433,13 +447,10 @@ class DigikabuEnhancer {
             this.isActive = false;
             this.cleanupAll();
         }
-        else if (oldTheme === 'standard') {
+        else {
             this.isActive = true;
             this.applyTheme();
             this.addTimeDisplay();
-        }
-        else {
-            this.applyTheme();
         }
         this.saveSettings();
     }
