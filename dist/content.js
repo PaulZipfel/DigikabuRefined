@@ -219,8 +219,58 @@ class DigikabuEnhancer {
             }
         });
     }
-    getTimeSlotFromYPosition(yPosition) {
-        return null;
+    getCurrentPeriodLengthFromSchedule() {
+        try {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+            const userSide = this.getUserSidePreference();
+            const svgElements = Array.from(document.querySelectorAll('svg'));
+            for (const svg of svgElements) {
+                const hasClasses = svg.querySelector('rect.std, rect.vertretStd');
+                if (!hasClasses)
+                    continue;
+                const width = svg.getAttribute('width') || '';
+                const xPos = svg.getAttribute('x') || '0%';
+                const yPos = parseFloat(svg.getAttribute('y') || '0');
+                const height = parseFloat(svg.getAttribute('height') || '60');
+                if (height >= 300)
+                    continue;
+                if (width === '50%') {
+                    if (userSide === 'left' && xPos !== '0%')
+                        continue;
+                    if (userSide === 'right' && xPos !== '50%')
+                        continue;
+                }
+                const startSlotIndex = Math.floor(yPos / 60);
+                const periods = Math.round(height / 60);
+                const endSlotIndex = startSlotIndex + periods - 1;
+                if (startSlotIndex >= 0 && startSlotIndex < this.timeSlots.length &&
+                    endSlotIndex >= 0 && endSlotIndex < this.timeSlots.length) {
+                    const startTime = this.parseTime(this.timeSlots[startSlotIndex].start);
+                    const endTime = this.parseTime(this.timeSlots[endSlotIndex].end);
+                    const startMinutes = startTime.getHours() * 60 + startTime.getMinutes();
+                    const endMinutes = endTime.getHours() * 60 + endTime.getMinutes();
+                    if (currentTime >= startMinutes && currentTime < endMinutes) {
+                        let type = 'Stunde';
+                        if (periods === 2)
+                            type = 'Doppelstunde';
+                        else if (periods === 3)
+                            type = 'Dreifachstunde';
+                        else if (periods > 3)
+                            type = `${periods}-Stunden-Block`;
+                        return {
+                            periods,
+                            endTime,
+                            type
+                        };
+                    }
+                }
+            }
+            return { periods: 1, endTime: null, type: 'Stunde' };
+        }
+        catch (error) {
+            return { periods: 1, endTime: null, type: 'Stunde' };
+        }
     }
     getSchoolEndTime() {
         const actualLastPeriod = this.getActualLastPeriodFromSchedule();
@@ -235,12 +285,8 @@ class DigikabuEnhancer {
         return this.parseTime(lastSlot.end);
     }
     debugScheduleAnalysis() {
-        var _a;
-        console.log('=== STUNDENPLAN DEBUG ===');
         const userSide = this.getUserSidePreference();
         const svgElements = Array.from(document.querySelectorAll('svg'));
-        console.log('User Seite:', userSide);
-        console.log('SVG-Elemente gefunden:', svgElements.length);
         let validSVGs = 0;
         for (const svg of svgElements) {
             const hasClasses = svg.querySelector('rect.std');
@@ -259,10 +305,7 @@ class DigikabuEnhancer {
             validSVGs++;
             const endY = yPos + height;
             const endSlotIndex = Math.floor(endY / 60) - 1;
-            console.log(`SVG ${validSVGs}: width=${width}, x=${xPos}, y=${yPos}, h=${height} → endY=${endY}, slot=${endSlotIndex}, time=${((_a = this.timeSlots[endSlotIndex]) === null || _a === void 0 ? void 0 : _a.end) || 'invalid'}`);
         }
-        console.log('Gültige SVGs nach Filterung:', validSVGs);
-        console.log('=== DEBUG ENDE ===');
     }
     getCurrentPeriodInfo() {
         const now = new Date();
@@ -275,6 +318,8 @@ class DigikabuEnhancer {
         const schoolEndTime = this.getSchoolEndTime();
         const diffMsToSchoolEnd = schoolEndTime.getTime() - now.getTime();
         const minutesUntilSchoolEnd = Math.max(0, Math.floor(diffMsToSchoolEnd / (1000 * 60)));
+        const periodLength = this.getCurrentPeriodLengthFromSchedule();
+        let currentPeriodEndTime = null;
         for (const slot of this.timeSlots) {
             const startTime = this.parseTime(slot.start);
             const endTime = this.parseTime(slot.end);
@@ -282,10 +327,18 @@ class DigikabuEnhancer {
             const endMinutes = endTime.getHours() * 60 + endTime.getMinutes();
             if (currentTime >= startMinutes && currentTime < endMinutes) {
                 currentPeriod = slot;
-                const currentPeriodEnd = this.parseTime(slot.end);
-                const diffMs = currentPeriodEnd.getTime() - now.getTime();
-                minutesRemaining = Math.floor(diffMs / (1000 * 60));
-                secondsRemaining = Math.floor((diffMs % (1000 * 60)) / 1000);
+                if (periodLength.endTime) {
+                    currentPeriodEndTime = periodLength.endTime;
+                    const diffMs = periodLength.endTime.getTime() - now.getTime();
+                    minutesRemaining = Math.floor(diffMs / (1000 * 60));
+                    secondsRemaining = Math.floor((diffMs % (1000 * 60)) / 1000);
+                }
+                else {
+                    currentPeriodEndTime = endTime;
+                    const diffMs = endTime.getTime() - now.getTime();
+                    minutesRemaining = Math.floor(diffMs / (1000 * 60));
+                    secondsRemaining = Math.floor((diffMs % (1000 * 60)) / 1000);
+                }
                 break;
             }
         }
@@ -306,7 +359,9 @@ class DigikabuEnhancer {
             nextPeriod,
             minutesUntilNext,
             schoolEndTime,
-            minutesUntilSchoolEnd
+            minutesUntilSchoolEnd,
+            currentPeriodType: periodLength.type,
+            currentPeriodEndTime
         };
     }
     formatTimeRemaining(totalMinutes, seconds) {
@@ -317,6 +372,16 @@ class DigikabuEnhancer {
         }
         else {
             return `${totalMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+    }
+    formatMinutesToHours(totalMinutes) {
+        if (totalMinutes >= 60) {
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            return `${hours}:${minutes.toString().padStart(2, '0')}h`;
+        }
+        else {
+            return `${totalMinutes} Min`;
         }
     }
     addTimeDisplay() {
@@ -523,7 +588,7 @@ class DigikabuEnhancer {
         document.head.appendChild(styleElement);
     }
     updateTimeDisplay() {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         const timeDisplay = document.getElementById('digikabu-time-display');
         if (!timeDisplay) {
             return;
@@ -539,22 +604,25 @@ class DigikabuEnhancer {
             const seconds = periodInfo.secondsRemaining;
             const formattedTime = this.formatTimeRemaining(minutes, seconds);
             const schoolEndStr = ((_a = periodInfo.schoolEndTime) === null || _a === void 0 ? void 0 : _a.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })) || '';
+            const schoolEndFormatted = this.formatMinutesToHours(periodInfo.minutesUntilSchoolEnd);
+            const periodEndTime = ((_b = periodInfo.currentPeriodEndTime) === null || _b === void 0 ? void 0 : _b.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })) || periodInfo.period.end;
             timeDisplay.innerHTML = `
         <div class="digikabu-time-header">
           <span class="digikabu-time-icon"></span>
-          Aktuelle Stunde: ${periodInfo.period.name}
+          Aktuelle ${periodInfo.currentPeriodType}: ${periodInfo.period.name}
         </div>
         <div class="digikabu-time-content">
           ${formattedTime}
         </div>
         <div class="digikabu-time-subtext">
-          verbleibend bis Stundenende (${periodInfo.period.end} Uhr)<br>
-          Schulschluss: ${schoolEndStr} Uhr (${periodInfo.minutesUntilSchoolEnd} Min)
+          verbleibend bis ${periodInfo.currentPeriodType}ende (${periodEndTime} Uhr)<br>
+          Schulschluss: ${schoolEndStr} Uhr (${schoolEndFormatted})
         </div>
       `;
         }
         else if (periodInfo.nextPeriod && periodInfo.minutesUntilNext > 0 && periodInfo.minutesUntilNext < 60) {
-            const schoolEndStr = ((_b = periodInfo.schoolEndTime) === null || _b === void 0 ? void 0 : _b.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })) || '';
+            const schoolEndStr = ((_c = periodInfo.schoolEndTime) === null || _c === void 0 ? void 0 : _c.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })) || '';
+            const schoolEndFormatted = this.formatMinutesToHours(periodInfo.minutesUntilSchoolEnd);
             timeDisplay.innerHTML = `
         <div class="digikabu-time-header">
           <span class="digikabu-time-icon"></span>
@@ -565,7 +633,7 @@ class DigikabuEnhancer {
         </div>
         <div class="digikabu-time-subtext">
           bis ${periodInfo.nextPeriod.name} (${periodInfo.nextPeriod.start} Uhr)<br>
-          Schulschluss: ${schoolEndStr} Uhr
+          Schulschluss: ${schoolEndStr} Uhr (${schoolEndFormatted})
         </div>
       `;
         }
@@ -576,7 +644,8 @@ class DigikabuEnhancer {
                 minute: '2-digit',
                 second: '2-digit'
             });
-            const schoolEndStr = ((_c = periodInfo.schoolEndTime) === null || _c === void 0 ? void 0 : _c.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })) || '';
+            const schoolEndStr = ((_d = periodInfo.schoolEndTime) === null || _d === void 0 ? void 0 : _d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })) || '';
+            const schoolEndFormatted = this.formatMinutesToHours(periodInfo.minutesUntilSchoolEnd);
             timeDisplay.innerHTML = `
         <div class="digikabu-time-header">
           <span class="digikabu-time-icon"></span>
@@ -587,7 +656,7 @@ class DigikabuEnhancer {
         </div>
         <div class="digikabu-time-subtext">
           ${periodInfo.nextPeriod ? `Nächste Stunde: ${periodInfo.nextPeriod.name} um ${periodInfo.nextPeriod.start} Uhr<br>` : ''}
-          ${schoolEndStr ? `Schulschluss: ${schoolEndStr} Uhr` : 'Kein Unterricht heute'}
+          ${schoolEndStr ? `Schulschluss: ${schoolEndStr} Uhr (${schoolEndFormatted})` : 'Kein Unterricht heute'}
         </div>
       `;
         }
