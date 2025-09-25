@@ -40,15 +40,12 @@ class DigikabuAutoLogin {
     getAutoLoginStatus() {
         return this.isAutoLoginEnabled();
     }
-    // STABILERER Browser-Fingerprint - entfernt volatile Eigenschaften
     async getBrowserFingerprint() {
-        // Nur stabile Eigenschaften verwenden
         const fingerprint = [
             navigator.userAgent,
             navigator.language,
             screen.width + 'x' + screen.height,
             navigator.hardwareConcurrency || 'unknown',
-            // Canvas und deviceMemory entfernt - zu instabil
         ].join('|');
         const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(fingerprint));
         return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -82,7 +79,6 @@ class DigikabuAutoLogin {
     }
     async decryptData(secureData) {
         try {
-            // Prüfe Ablaufzeit (30 Tage)
             if (Date.now() - secureData.timestamp > 30 * 24 * 60 * 60 * 1000) {
                 console.warn('Stored credentials expired, clearing...');
                 await this.clearStoredCredentials();
@@ -105,7 +101,6 @@ class DigikabuAutoLogin {
         }
         catch (error) {
             console.error('Decryption failed - clearing stored data:', error);
-            // Bei Entschlüsselungsfehlern die Daten löschen
             await this.clearStoredCredentials();
             throw error;
         }
@@ -143,7 +138,6 @@ class DigikabuAutoLogin {
         }
         catch (error) {
             console.error('Failed to retrieve credentials:', error);
-            // Bereits in decryptData behandelt
             return null;
         }
     }
@@ -154,7 +148,6 @@ class DigikabuAutoLogin {
         const loginButton = document.querySelector('button.btn.btn-primary[type="submit"]');
         if (!usernameField || !passwordField || !loginButton)
             return;
-        // KORRIGIERE autocomplete Attribute
         if (!usernameField.getAttribute('autocomplete')) {
             usernameField.setAttribute('autocomplete', 'username');
         }
@@ -177,7 +170,7 @@ class DigikabuAutoLogin {
     async waitForFormElements() {
         return new Promise((resolve) => {
             let attempts = 0;
-            const maxAttempts = 50; // 5 Sekunden maximum
+            const maxAttempts = 50;
             const checkForElements = () => {
                 attempts++;
                 const usernameField = document.getElementById('UserName');
@@ -201,20 +194,19 @@ class DigikabuAutoLogin {
     fillAndSubmitForm(usernameField, passwordField, loginButton, credentials) {
         usernameField.value = credentials.username;
         passwordField.value = credentials.password;
-        // Events für die Formvalidierung auslösen
         usernameField.dispatchEvent(new Event('input', { bubbles: true }));
         usernameField.dispatchEvent(new Event('change', { bubbles: true }));
         passwordField.dispatchEvent(new Event('input', { bubbles: true }));
         passwordField.dispatchEvent(new Event('change', { bubbles: true }));
         setTimeout(() => {
             this.autoSubmitForm(loginButton);
-        }, 300); // Etwas länger warten
+        }, 300);
     }
     autoSubmitForm(loginButton) {
         setTimeout(() => {
             console.debug('Submitting form...');
             loginButton.click();
-        }, 500); // Länger warten für bessere Kompatibilität
+        }, 500);
     }
     setupFormListeners() {
         const currentUrl = window.location.href;
@@ -227,7 +219,6 @@ class DigikabuAutoLogin {
             const loginButton = document.querySelector('button.btn.btn-primary[type="submit"]');
             if (!loginButton)
                 return;
-            // Einmaliger Event Listener
             let credentialsSaved = false;
             loginButton.addEventListener('click', async (event) => {
                 if (credentialsSaved)
