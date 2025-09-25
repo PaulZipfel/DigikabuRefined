@@ -56,54 +56,12 @@ class DigikabuAutoLogin {
     return this.isAutoLoginEnabled();
   }
 
-  private async generateMasterKey(): Promise<CryptoKey> {
-    if (this.masterKey) return this.masterKey;
-
-    const browserInfo = await this.getBrowserFingerprint();
-    const keyMaterial = await window.crypto.subtle.importKey(
-      'raw',
-      new TextEncoder().encode(browserInfo),
-      { name: 'PBKDF2' },
-      false,
-      ['deriveBits', 'deriveKey']
-    );
-
-    this.masterKey = await window.crypto.subtle.deriveKey(
-      {
-        name: 'PBKDF2',
-        salt: new TextEncoder().encode(`${browserInfo}-salt-${Date.now()}`),
-        iterations: 250000,
-        hash: 'SHA-256'
-      },
-      keyMaterial,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['encrypt', 'decrypt']
-    );
-
-    return this.masterKey;
-  }
-
   private async getBrowserFingerprint(): Promise<string> {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    let canvasData = 'fallback';
-    
-    if (ctx) {
-      ctx.textBaseline = 'top';
-      ctx.font = '14px Arial';
-      ctx.fillText('Browser fingerprint', 2, 2);
-      canvasData = canvas.toDataURL();
-    }
-    
     const fingerprint = [
       navigator.userAgent,
       navigator.language,
       screen.width + 'x' + screen.height,
-      new Date().getTimezoneOffset().toString(),
-      canvasData,
       navigator.hardwareConcurrency || 'unknown',
-      (navigator as any).deviceMemory || 'unknown'
     ].join('|');
     
     const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(fingerprint));
@@ -160,6 +118,8 @@ class DigikabuAutoLogin {
   private async decryptData(secureData: SecureStorage): Promise<string> {
     try {
       if (Date.now() - secureData.timestamp > 30 * 24 * 60 * 60 * 1000) {
+        console.warn('Stored credentials expired, clearing...');
+        await this.clearStoredCredentials();
         throw new Error('Data expired');
       }
 
@@ -168,6 +128,8 @@ class DigikabuAutoLogin {
       const data = new Uint8Array(atob(secureData.data).split('').map(char => char.charCodeAt(0)));
 
       const browserInfo = await this.getBrowserFingerprint();
+      console.debug('Decryption browser fingerprint:', browserInfo.substring(0, 16) + '...');
+      
       const keyMaterial = await window.crypto.subtle.importKey(
         'raw',
         new TextEncoder().encode(browserInfo + secureData.timestamp.toString()),
@@ -197,7 +159,8 @@ class DigikabuAutoLogin {
 
       return new TextDecoder().decode(decryptedData);
     } catch (error) {
-      console.error('Decryption failed:', error);
+      console.error('Decryption failed - clearing stored data:', error);
+      await this.clearStoredCredentials();
       throw error;
     }
   }
@@ -206,12 +169,16 @@ class DigikabuAutoLogin {
     if (!username || !password) return;
 
     try {
+      const browserInfo = await this.getBrowserFingerprint();
+      console.debug('Encryption browser fingerprint:', browserInfo.substring(0, 16) + '...');
+      
       const credentials: LoginCredentials = { username, password };
       const encryptedStorage = await this.encryptData(JSON.stringify(credentials));
       
       await chrome.storage.local.set({
         [this.STORAGE_KEY]: JSON.stringify(encryptedStorage)
       });
+      console.debug('Credentials saved successfully');
     } catch (error) {
       console.error('Failed to save credentials:', error);
     }
@@ -222,14 +189,18 @@ class DigikabuAutoLogin {
       const result = await chrome.storage.local.get([this.STORAGE_KEY]);
       const encryptedData = result[this.STORAGE_KEY];
       
-      if (!encryptedData) return null;
+      if (!encryptedData) {
+        console.debug('No stored credentials found');
+        return null;
+      }
       
       const secureStorage = JSON.parse(encryptedData) as SecureStorage;
       const decryptedData = await this.decryptData(secureStorage);
-      return JSON.parse(decryptedData) as LoginCredentials;
+      const credentials = JSON.parse(decryptedData) as LoginCredentials;
+      console.debug('Credentials retrieved successfully');
+      return credentials;
     } catch (error) {
       console.error('Failed to retrieve credentials:', error);
-      await this.clearStoredCredentials();
       return null;
     }
   }
@@ -243,25 +214,45 @@ class DigikabuAutoLogin {
 
     if (!usernameField || !passwordField || !loginButton) return;
 
+    if (!usernameField.getAttribute('autocomplete')) {
+      usernameField.setAttribute('autocomplete', 'username');
+    }
+    if (!passwordField.getAttribute('autocomplete')) {
+      passwordField.setAttribute('autocomplete', 'current-password');
+    }
+
     if (usernameField.value && passwordField.value) {
+      console.debug('Form already filled, submitting...');
       this.autoSubmitForm(loginButton);
       return;
     }
 
     const credentials = await this.getStoredCredentials();
-    if (!credentials) return;
+    if (!credentials) {
+      console.debug('No valid credentials available');
+      return;
+    }
 
+    console.debug('Auto-filling login form...');
     this.fillAndSubmitForm(usernameField, passwordField, loginButton, credentials);
   }
 
   private async waitForFormElements(): Promise<void> {
     return new Promise((resolve) => {
+      let attempts = 0;
+      const maxAttempts = 50;
+      
       const checkForElements = () => {
+        attempts++;
         const usernameField = document.getElementById('UserName');
         const passwordField = document.getElementById('Password');
         const loginButton = document.querySelector('button.btn.btn-primary[type="submit"]');
 
         if (usernameField && passwordField && loginButton) {
+          console.debug('Form elements found after', attempts, 'attempts');
+          resolve();
+        } else if (attempts >= maxAttempts) {
+          console.warn('Form elements not found after maximum attempts');
           resolve();
         } else {
           setTimeout(checkForElements, 100);
@@ -282,17 +273,20 @@ class DigikabuAutoLogin {
     passwordField.value = credentials.password;
 
     usernameField.dispatchEvent(new Event('input', { bubbles: true }));
+    usernameField.dispatchEvent(new Event('change', { bubbles: true }));
     passwordField.dispatchEvent(new Event('input', { bubbles: true }));
+    passwordField.dispatchEvent(new Event('change', { bubbles: true }));
 
     setTimeout(() => {
       this.autoSubmitForm(loginButton);
-    }, 200);
+    }, 300);
   }
 
   private autoSubmitForm(loginButton: HTMLButtonElement): void {
     setTimeout(() => {
+      console.debug('Submitting form...');
       loginButton.click();
-    }, 300);
+    }, 500);
   }
 
   private setupFormListeners(): void {
@@ -307,11 +301,17 @@ class DigikabuAutoLogin {
       const loginButton = document.querySelector('button.btn.btn-primary[type="submit"]') as HTMLButtonElement;
       if (!loginButton) return;
 
+      let credentialsSaved = false;
+      
       loginButton.addEventListener('click', async (event) => {
+        if (credentialsSaved) return;
+        
         const usernameField = document.getElementById('UserName') as HTMLInputElement;
         const passwordField = document.getElementById('Password') as HTMLInputElement;
 
         if (usernameField && passwordField && usernameField.value && passwordField.value) {
+          credentialsSaved = true;
+          console.debug('Saving credentials on manual login...');
           await this.saveCredentials(usernameField.value, passwordField.value);
         }
       });
@@ -321,6 +321,7 @@ class DigikabuAutoLogin {
   public async clearStoredCredentials(): Promise<void> {
     try {
       await chrome.storage.local.remove([this.STORAGE_KEY]);
+      console.debug('Stored credentials cleared');
     } catch (error) {
       console.error('Failed to clear credentials:', error);
     }
@@ -336,6 +337,7 @@ if (!autoLoginWindow.digikabuAutoLoginLoaded) {
     try {
       const autoLogin = new DigikabuAutoLogin();
       autoLoginWindow.digikabuAutoLogin = autoLogin;
+      console.debug('DigikabuAutoLogin initialized');
     } catch (error) {
       console.error('Failed to initialize auto-login:', error);
     }
