@@ -3,14 +3,17 @@ class DigikabuPopup {
     constructor() {
         this.currentTheme = 'standard';
         this.isExtensionActive = false;
+        this.autoLoginEnabled = false;
         this.init();
     }
     async init() {
         await this.loadCurrentTheme();
+        await this.loadAutoLoginSettings();
         this.updateActiveTheme();
         this.setupEventListeners();
         this.addRippleEffect();
         this.updateStatusDisplay();
+        this.updateAutoLoginUI();
     }
     async loadCurrentTheme() {
         try {
@@ -22,6 +25,16 @@ class DigikabuPopup {
             console.error('Fehler beim Laden des Themes:', error);
             this.currentTheme = 'standard';
             this.isExtensionActive = false;
+        }
+    }
+    async loadAutoLoginSettings() {
+        try {
+            const autoLoginSetting = localStorage.getItem('digikabu-autologin-enabled');
+            this.autoLoginEnabled = autoLoginSetting === 'true';
+        }
+        catch (error) {
+            console.error('Fehler beim Laden der AutoLogin-Einstellungen:', error);
+            this.autoLoginEnabled = false;
         }
     }
     async loadExtensionStatus() {
@@ -49,6 +62,26 @@ class DigikabuPopup {
         const activeButton = document.querySelector(`[data-theme="${this.currentTheme}"]`);
         if (activeButton) {
             activeButton.classList.add('active');
+        }
+    }
+    updateAutoLoginUI() {
+        const toggle = document.getElementById('autologin-toggle');
+        const securityNote = document.getElementById('security-note');
+        if (toggle) {
+            if (this.autoLoginEnabled) {
+                toggle.classList.add('active');
+            }
+            else {
+                toggle.classList.remove('active');
+            }
+        }
+        if (securityNote) {
+            if (this.autoLoginEnabled) {
+                securityNote.classList.add('visible');
+            }
+            else {
+                securityNote.classList.remove('visible');
+            }
         }
     }
     updateStatusDisplay() {
@@ -86,6 +119,62 @@ class DigikabuPopup {
                 }
             });
         });
+        const autoLoginToggle = document.getElementById('autologin-toggle');
+        if (autoLoginToggle) {
+            autoLoginToggle.addEventListener('click', () => {
+                this.toggleAutoLogin();
+            });
+        }
+    }
+    async toggleAutoLogin() {
+        this.autoLoginEnabled = !this.autoLoginEnabled;
+        try {
+            localStorage.setItem('digikabu-autologin-enabled', this.autoLoginEnabled.toString());
+            this.updateAutoLoginUI();
+            await this.sendAutoLoginMessage();
+            if (this.autoLoginEnabled) {
+                this.showStatus('Auto-Login aktiviert ✨', 'success');
+            }
+            else {
+                this.showStatus('Auto-Login deaktiviert', 'info');
+                await this.clearStoredCredentials();
+            }
+        }
+        catch (error) {
+            console.error('Fehler beim Ändern der AutoLogin-Einstellung:', error);
+            this.autoLoginEnabled = !this.autoLoginEnabled;
+            this.updateAutoLoginUI();
+            this.showStatus('Fehler beim Ändern der Einstellung', 'error');
+        }
+    }
+    async sendAutoLoginMessage() {
+        var _a;
+        try {
+            const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+            if ((_a = tabs[0]) === null || _a === void 0 ? void 0 : _a.id) {
+                await chrome.tabs.sendMessage(tabs[0].id, {
+                    action: 'setAutoLogin',
+                    enabled: this.autoLoginEnabled
+                });
+            }
+        }
+        catch (error) {
+            console.error('Fehler beim Senden der AutoLogin-Nachricht:', error);
+        }
+    }
+    async clearStoredCredentials() {
+        var _a;
+        try {
+            const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+            if ((_a = tabs[0]) === null || _a === void 0 ? void 0 : _a.id) {
+                await chrome.tabs.sendMessage(tabs[0].id, {
+                    action: 'clearCredentials'
+                });
+            }
+        }
+        catch (error) {
+            console.error('Fehler beim Löschen der gespeicherten Daten:', error);
+        }
     }
     async changeTheme(theme) {
         if (theme === this.currentTheme)
@@ -180,6 +269,7 @@ class DigikabuPopup {
         return {
             currentTheme: this.currentTheme,
             isExtensionActive: this.isExtensionActive,
+            autoLoginEnabled: this.autoLoginEnabled,
             timestamp: new Date().toISOString()
         };
     }

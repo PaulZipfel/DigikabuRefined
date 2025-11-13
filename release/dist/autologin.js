@@ -1,5 +1,5 @@
 "use strict";
-class DigikabuSecureAutoLogin {
+class DigikabuAutoLogin {
     constructor() {
         this.STORAGE_KEY = 'dkb_al_sec';
         this.SETTINGS_KEY = 'dkb_al_en';
@@ -40,37 +40,12 @@ class DigikabuSecureAutoLogin {
     getAutoLoginStatus() {
         return this.isAutoLoginEnabled();
     }
-    async generateMasterKey() {
-        if (this.masterKey)
-            return this.masterKey;
-        const browserInfo = await this.getBrowserFingerprint();
-        const keyMaterial = await window.crypto.subtle.importKey('raw', new TextEncoder().encode(browserInfo), { name: 'PBKDF2' }, false, ['deriveBits', 'deriveKey']);
-        this.masterKey = await window.crypto.subtle.deriveKey({
-            name: 'PBKDF2',
-            salt: new TextEncoder().encode(`${browserInfo}-salt-${Date.now()}`),
-            iterations: 250000,
-            hash: 'SHA-256'
-        }, keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
-        return this.masterKey;
-    }
     async getBrowserFingerprint() {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        let canvasData = 'fallback';
-        if (ctx) {
-            ctx.textBaseline = 'top';
-            ctx.font = '14px Arial';
-            ctx.fillText('Browser fingerprint', 2, 2);
-            canvasData = canvas.toDataURL();
-        }
         const fingerprint = [
             navigator.userAgent,
             navigator.language,
             screen.width + 'x' + screen.height,
-            new Date().getTimezoneOffset().toString(),
-            canvasData,
             navigator.hardwareConcurrency || 'unknown',
-            navigator.deviceMemory || 'unknown'
         ].join('|');
         const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(fingerprint));
         return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -79,20 +54,22 @@ class DigikabuSecureAutoLogin {
         try {
             const salt = crypto.getRandomValues(new Uint8Array(32));
             const iv = crypto.getRandomValues(new Uint8Array(16));
-            const baseKey = await this.generateMasterKey();
-            const derivedKey = await window.crypto.subtle.deriveKey({
+            const timestamp = Date.now();
+            const browserInfo = await this.getBrowserFingerprint();
+            const keyMaterial = await window.crypto.subtle.importKey('raw', new TextEncoder().encode(browserInfo + timestamp.toString()), { name: 'PBKDF2' }, false, ['deriveKey']);
+            const encryptionKey = await window.crypto.subtle.deriveKey({
                 name: 'PBKDF2',
                 salt: salt,
                 iterations: 100000,
                 hash: 'SHA-256'
-            }, await window.crypto.subtle.importKey('raw', await window.crypto.subtle.exportKey('raw', baseKey), { name: 'PBKDF2' }, false, ['deriveKey']), { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+            }, keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
             const encodedData = new TextEncoder().encode(data);
-            const encryptedData = await window.crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, derivedKey, encodedData);
+            const encryptedData = await window.crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, encryptionKey, encodedData);
             return {
                 data: btoa(String.fromCharCode(...new Uint8Array(encryptedData))),
                 iv: btoa(String.fromCharCode(...iv)),
                 salt: btoa(String.fromCharCode(...salt)),
-                timestamp: Date.now()
+                timestamp: timestamp
             };
         }
         catch (error) {
@@ -103,23 +80,27 @@ class DigikabuSecureAutoLogin {
     async decryptData(secureData) {
         try {
             if (Date.now() - secureData.timestamp > 30 * 24 * 60 * 60 * 1000) {
+                console.warn('Stored credentials expired, clearing...');
+                await this.clearStoredCredentials();
                 throw new Error('Data expired');
             }
             const salt = new Uint8Array(atob(secureData.salt).split('').map(char => char.charCodeAt(0)));
             const iv = new Uint8Array(atob(secureData.iv).split('').map(char => char.charCodeAt(0)));
             const data = new Uint8Array(atob(secureData.data).split('').map(char => char.charCodeAt(0)));
-            const baseKey = await this.generateMasterKey();
-            const derivedKey = await window.crypto.subtle.deriveKey({
+            const browserInfo = await this.getBrowserFingerprint();
+            const keyMaterial = await window.crypto.subtle.importKey('raw', new TextEncoder().encode(browserInfo + secureData.timestamp.toString()), { name: 'PBKDF2' }, false, ['deriveKey']);
+            const decryptionKey = await window.crypto.subtle.deriveKey({
                 name: 'PBKDF2',
                 salt: salt,
                 iterations: 100000,
                 hash: 'SHA-256'
-            }, await window.crypto.subtle.importKey('raw', await window.crypto.subtle.exportKey('raw', baseKey), { name: 'PBKDF2' }, false, ['deriveKey']), { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
-            const decryptedData = await window.crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, derivedKey, data);
+            }, keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+            const decryptedData = await window.crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, decryptionKey, data);
             return new TextDecoder().decode(decryptedData);
         }
         catch (error) {
-            console.error('Decryption failed:', error);
+            console.error('Decryption failed - clearing stored data:', error);
+            await this.clearStoredCredentials();
             throw error;
         }
     }
@@ -127,6 +108,7 @@ class DigikabuSecureAutoLogin {
         if (!username || !password)
             return;
         try {
+            const browserInfo = await this.getBrowserFingerprint();
             const credentials = { username, password };
             const encryptedStorage = await this.encryptData(JSON.stringify(credentials));
             await chrome.storage.local.set({
@@ -141,15 +123,16 @@ class DigikabuSecureAutoLogin {
         try {
             const result = await chrome.storage.local.get([this.STORAGE_KEY]);
             const encryptedData = result[this.STORAGE_KEY];
-            if (!encryptedData)
+            if (!encryptedData) {
                 return null;
+            }
             const secureStorage = JSON.parse(encryptedData);
             const decryptedData = await this.decryptData(secureStorage);
-            return JSON.parse(decryptedData);
+            const credentials = JSON.parse(decryptedData);
+            return credentials;
         }
         catch (error) {
             console.error('Failed to retrieve credentials:', error);
-            await this.clearStoredCredentials();
             return null;
         }
     }
@@ -160,22 +143,35 @@ class DigikabuSecureAutoLogin {
         const loginButton = document.querySelector('button.btn.btn-primary[type="submit"]');
         if (!usernameField || !passwordField || !loginButton)
             return;
+        if (!usernameField.getAttribute('autocomplete')) {
+            usernameField.setAttribute('autocomplete', 'username');
+        }
+        if (!passwordField.getAttribute('autocomplete')) {
+            passwordField.setAttribute('autocomplete', 'current-password');
+        }
         if (usernameField.value && passwordField.value) {
             this.autoSubmitForm(loginButton);
             return;
         }
         const credentials = await this.getStoredCredentials();
-        if (!credentials)
+        if (!credentials) {
             return;
+        }
         this.fillAndSubmitForm(usernameField, passwordField, loginButton, credentials);
     }
     async waitForFormElements() {
         return new Promise((resolve) => {
+            let attempts = 0;
+            const maxAttempts = 50;
             const checkForElements = () => {
+                attempts++;
                 const usernameField = document.getElementById('UserName');
                 const passwordField = document.getElementById('Password');
                 const loginButton = document.querySelector('button.btn.btn-primary[type="submit"]');
                 if (usernameField && passwordField && loginButton) {
+                    resolve();
+                }
+                else if (attempts >= maxAttempts) {
                     resolve();
                 }
                 else {
@@ -189,15 +185,17 @@ class DigikabuSecureAutoLogin {
         usernameField.value = credentials.username;
         passwordField.value = credentials.password;
         usernameField.dispatchEvent(new Event('input', { bubbles: true }));
+        usernameField.dispatchEvent(new Event('change', { bubbles: true }));
         passwordField.dispatchEvent(new Event('input', { bubbles: true }));
+        passwordField.dispatchEvent(new Event('change', { bubbles: true }));
         setTimeout(() => {
             this.autoSubmitForm(loginButton);
-        }, 500);
+        }, 300);
     }
     autoSubmitForm(loginButton) {
         setTimeout(() => {
             loginButton.click();
-        }, 1000);
+        }, 500);
     }
     setupFormListeners() {
         const currentUrl = window.location.href;
@@ -210,10 +208,14 @@ class DigikabuSecureAutoLogin {
             const loginButton = document.querySelector('button.btn.btn-primary[type="submit"]');
             if (!loginButton)
                 return;
+            let credentialsSaved = false;
             loginButton.addEventListener('click', async (event) => {
+                if (credentialsSaved)
+                    return;
                 const usernameField = document.getElementById('UserName');
                 const passwordField = document.getElementById('Password');
                 if (usernameField && passwordField && usernameField.value && passwordField.value) {
+                    credentialsSaved = true;
                     await this.saveCredentials(usernameField.value, passwordField.value);
                 }
             });
@@ -228,22 +230,22 @@ class DigikabuSecureAutoLogin {
         }
     }
 }
-const secureAutoLoginWindow = window;
-if (!secureAutoLoginWindow.digikabuAutoLoginLoaded) {
-    secureAutoLoginWindow.digikabuAutoLoginLoaded = true;
-    function initSecureAutoLogin() {
+const autoLoginWindow = window;
+if (!autoLoginWindow.digikabuAutoLoginLoaded) {
+    autoLoginWindow.digikabuAutoLoginLoaded = true;
+    function initAutoLogin() {
         try {
-            const autoLogin = new DigikabuSecureAutoLogin();
-            secureAutoLoginWindow.digikabuAutoLogin = autoLogin;
+            const autoLogin = new DigikabuAutoLogin();
+            autoLoginWindow.digikabuAutoLogin = autoLogin;
         }
         catch (error) {
-            console.error('Failed to initialize secure auto-login:', error);
+            console.error('Failed to initialize auto-login:', error);
         }
     }
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initSecureAutoLogin);
+        document.addEventListener('DOMContentLoaded', initAutoLogin);
     }
     else {
-        initSecureAutoLogin();
+        initAutoLogin();
     }
 }

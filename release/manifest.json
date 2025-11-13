@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Advanced Digikabu",
-  "version": "1.0.0",
-  "description": "Erweitert Digikabu mit Themes und modernen Features",
+  "version": "1.0.1",
+  "description": "Erweitert Digikabu mit Themes, Auto-Login und modernen Features",
   "permissions": ["storage", "activeTab"],
   "host_permissions": [
     "https://www.digikabu.de/*"
@@ -17,9 +17,9 @@
       "matches": [
         "https://www.digikabu.de/*"
       ],
-      "js": ["dist/content.js"],
+      "js": ["dist/content.js", "dist/autologin.js"],
       "css": ["styles.css"],
-      "run_at": "document_start"
+      "run_at": "document_end"
     }
   ],
   "action": {

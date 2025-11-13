@@ -6,6 +6,7 @@ class DigikabuEnhancer {
         };
         this.isInitialized = false;
         this.isActive = false;
+        this.lastSchoolEndCheck = 0;
         this.timeSlots = [
             { start: "08:30", end: "09:15", name: "1. Stunde" },
             { start: "09:15", end: "10:00", name: "2. Stunde" },
@@ -285,8 +286,12 @@ class DigikabuEnhancer {
         return this.parseTime(lastSlot.end);
     }
     debugScheduleAnalysis() {
+        var _a;
+        console.log('=== STUNDENPLAN DEBUG ===');
         const userSide = this.getUserSidePreference();
         const svgElements = Array.from(document.querySelectorAll('svg'));
+        console.log('User Seite:', userSide);
+        console.log('SVG-Elemente gefunden:', svgElements.length);
         let validSVGs = 0;
         for (const svg of svgElements) {
             const hasClasses = svg.querySelector('rect.std');
@@ -305,7 +310,10 @@ class DigikabuEnhancer {
             validSVGs++;
             const endY = yPos + height;
             const endSlotIndex = Math.floor(endY / 60) - 1;
+            console.log(`SVG ${validSVGs}: width=${width}, x=${xPos}, y=${yPos}, h=${height} → endY=${endY}, slot=${endSlotIndex}, time=${((_a = this.timeSlots[endSlotIndex]) === null || _a === void 0 ? void 0 : _a.end) || 'invalid'}`);
         }
+        console.log('Gültige SVGs nach Filterung:', validSVGs);
+        console.log('=== DEBUG ENDE ===');
     }
     getCurrentPeriodInfo() {
         const now = new Date();
@@ -382,6 +390,208 @@ class DigikabuEnhancer {
         }
         else {
             return `${totalMinutes} Min`;
+        }
+    }
+    checkForSchoolEndCelebration() {
+        const periodInfo = this.getCurrentPeriodInfo();
+        if (!periodInfo.schoolEndTime)
+            return;
+        const now = new Date();
+        const schoolEndTime = periodInfo.schoolEndTime;
+        const timeDiff = now.getTime() - schoolEndTime.getTime();
+        const today = now.toDateString();
+        const lastCelebrationDate = localStorage.getItem('digikabu-last-celebration');
+        if (timeDiff >= 0 && timeDiff <= 60000 && lastCelebrationDate !== today) {
+            localStorage.setItem('digikabu-last-celebration', today);
+            this.showSchoolEndCelebration();
+        }
+    }
+    showSchoolEndCelebration() {
+        if (document.getElementById('digikabu-celebration'))
+            return;
+        const celebration = document.createElement('div');
+        celebration.id = 'digikabu-celebration';
+        celebration.innerHTML = `
+      <div class="celebration-message">
+        <h2>🎉 Schultag beendet! 🎉</h2>
+        <p>Enjoy your free time! 🚀</p>
+      </div>
+    `;
+        for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.animationDelay = Math.random() * 3 + 's';
+            confetti.style.backgroundColor = this.getRandomColor();
+            celebration.appendChild(confetti);
+        }
+        for (let i = 0; i < 8; i++) {
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            firework.style.left = Math.random() * 80 + 10 + 'vw';
+            firework.style.top = Math.random() * 50 + 20 + 'vh';
+            firework.style.animationDelay = Math.random() * 2 + 's';
+            celebration.appendChild(firework);
+        }
+        this.injectCelebrationStyles();
+        document.body.appendChild(celebration);
+        setTimeout(() => {
+            if (celebration.parentNode) {
+                celebration.parentNode.removeChild(celebration);
+            }
+            this.removeCelebrationStyles();
+        }, 10000);
+    }
+    getRandomColor() {
+        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#f0932b', '#eb4d4b', '#6c5ce7', '#a29bfe', '#fd79a8', '#00b894'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+    injectCelebrationStyles() {
+        if (document.getElementById('digikabu-celebration-styles'))
+            return;
+        const styleElement = document.createElement('style');
+        styleElement.id = 'digikabu-celebration-styles';
+        styleElement.textContent = `
+      #digikabu-celebration {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 10000;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .celebration-message {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 30px;
+        border-radius: 20px;
+        animation: celebrationBounce 1s ease-out;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+      }
+
+      .celebration-message h2 {
+        font-size: 2.5rem;
+        margin: 0 0 10px 0;
+        color: #ffd700 !important;
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        animation: glow 2s ease-in-out infinite alternate;
+      }
+
+      .celebration-message p {
+        font-size: 1.2rem;
+        margin: 0;
+        color: #fff !important;
+      }
+
+      @keyframes celebrationBounce {
+        0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+        50% { transform: translate(-50%, -50%) scale(1.1); }
+        100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      }
+
+      @keyframes glow {
+        from { text-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+        to { text-shadow: 0 0 30px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 215, 0, 0.6); }
+      }
+
+      .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        top: -10px;
+        animation: confettiFall 3s linear infinite;
+        transform-origin: center;
+      }
+
+      @keyframes confettiFall {
+        0% {
+          transform: translateY(-10vh) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(110vh) rotate(720deg);
+          opacity: 0;
+        }
+      }
+
+      .firework {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        animation: fireworkExplode 2s ease-out infinite;
+      }
+
+      @keyframes fireworkExplode {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+          box-shadow: 
+            0 0 0 0 #ff6b6b,
+            0 0 0 0 #4ecdc4,
+            0 0 0 0 #45b7d1,
+            0 0 0 0 #f9ca24,
+            0 0 0 0 #f0932b,
+            0 0 0 0 #eb4d4b,
+            0 0 0 0 #6c5ce7,
+            0 0 0 0 #a29bfe;
+        }
+        50% {
+          transform: scale(1);
+          opacity: 1;
+          box-shadow: 
+            30px 0 0 2px #ff6b6b,
+            -30px 0 0 2px #4ecdc4,
+            0 30px 0 2px #45b7d1,
+            0 -30px 0 2px #f9ca24,
+            21px 21px 0 2px #f0932b,
+            -21px -21px 0 2px #eb4d4b,
+            -21px 21px 0 2px #6c5ce7,
+            21px -21px 0 2px #a29bfe;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 0;
+          box-shadow: 
+            50px 0 0 4px transparent,
+            -50px 0 0 4px transparent,
+            0 50px 0 4px transparent,
+            0 -50px 0 4px transparent,
+            35px 35px 0 4px transparent,
+            -35px -35px 0 4px transparent,
+            -35px 35px 0 4px transparent,
+            35px -35px 0 4px transparent;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .celebration-message h2 {
+          font-size: 2rem;
+        }
+        .celebration-message p {
+          font-size: 1rem;
+        }
+        .celebration-message {
+          padding: 20px;
+          margin: 20px;
+        }
+      }
+    `;
+        document.head.appendChild(styleElement);
+    }
+    removeCelebrationStyles() {
+        const existingStyles = document.getElementById('digikabu-celebration-styles');
+        if (existingStyles) {
+            existingStyles.remove();
         }
     }
     addTimeDisplay() {
@@ -599,6 +809,7 @@ class DigikabuEnhancer {
             timeContent.classList.add('updating');
             setTimeout(() => timeContent.classList.remove('updating'), 500);
         }
+        this.checkForSchoolEndCelebration();
         if (periodInfo.isInPeriod && periodInfo.period) {
             const minutes = periodInfo.minutesRemaining;
             const seconds = periodInfo.secondsRemaining;
