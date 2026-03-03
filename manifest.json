@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Advanced Digikabu",
-  "version": "1.0.1",
-  "description": "Erweitert Digikabu mit Themes, Auto-Login und modernen Features",
+  "version": "2.0.0",
+  "description": "Modernisiert Digikabu mit React, Themes, Auto-Login und Live-Stundenplan-Widget",
   "permissions": ["storage", "activeTab"],
   "host_permissions": [
     "https://www.digikabu.de/*"
@@ -14,11 +14,9 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "https://www.digikabu.de/*"
-      ],
-      "js": ["dist/content.js", "dist/autologin.js"],
-      "css": ["styles.css"],
+      "matches": ["https://www.digikabu.de/*"],
+      "js": ["content.js", "autologin.js"],
+      "css": ["content.css"],
       "run_at": "document_end"
     }
   ],
