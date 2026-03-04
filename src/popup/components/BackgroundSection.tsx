@@ -1,4 +1,8 @@
+// ============================================================
 // src/popup/components/BackgroundSection.tsx
+// Hintergrundeffekt-Auswahl. Deaktiviert wenn Standard-Theme aktiv ist,
+// da Effekte nur auf dunklem Hintergrund sichtbar sind.
+// ============================================================
 
 import React from 'react'
 import type { BackgroundEffect } from '../../shared/types'
@@ -6,7 +10,7 @@ import type { BackgroundEffect } from '../../shared/types'
 interface Props {
   current: BackgroundEffect
   onChange: (effect: BackgroundEffect) => void
-  disabled?: boolean  // Disabled when theme is standard
+  disabled?: boolean
 }
 
 interface EffectOption {
@@ -45,7 +49,7 @@ const OPTIONS: EffectOption[] = [
   {
     id: 'none',
     label: 'Glassmorphism',
-    description: 'Ambient Glow',
+    description: 'Ambient Glow ohne WebGL',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <rect x="3" y="3" width="18" height="18" rx="4" opacity="0.5" />
@@ -76,9 +80,7 @@ export default function BackgroundSection({ current, onChange, disabled }: Props
             disabled={disabled}
             title={opt.description}
           >
-            <div className="bg-effect-icon">
-              {opt.icon}
-            </div>
+            <div className="bg-effect-icon">{opt.icon}</div>
             <div className="bg-effect-info">
               <span className="bg-effect-label">{opt.label}</span>
               <span className="bg-effect-desc">{opt.description}</span>

@@ -1,5 +1,8 @@
-import React from 'react'
-
+// ============================================================
+// src/popup/components/AutoLoginSection.tsx
+// Toggle für Auto-Login. Die eigentliche Verschlüsselung und
+// das Form-Autofill passiert in src/autologin/index.ts.
+// ============================================================
 interface Props {
   enabled: boolean
   onToggle: (enabled: boolean) => void

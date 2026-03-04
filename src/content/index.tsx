@@ -1,5 +1,10 @@
+// ============================================================
 // src/content/index.tsx
-// Main content script entry — mounts theme, background effects, and time widget
+// Haupt-Entry des Content Scripts — wird auf jeder digikabu.de-Seite injiziert.
+//
+// Zuständig für: Theme setzen, WebGL-Hintergrund mounten,
+// Live-Widget mounten, auf Popup-Nachrichten reagieren.
+// ============================================================
 
 import React from 'react'
 import { createRoot } from 'react-dom/client'
@@ -10,14 +15,13 @@ import TimeWidget from './components/TimeWidget'
 import SideDialog from './components/SideDialog'
 import BackgroundEffect from './components/BackgroundEffect'
 
-// ── Prevent double-init ─────────────────────────────────
+// Verhindert doppelte Initialisierung falls Chrome das Script mehrfach injiziert
 const win = window as any
 if (win.__digikabuEnhancerLoaded) {
   throw new Error('Already loaded')
 }
 win.__digikabuEnhancerLoaded = true
 
-// ── State ───────────────────────────────────────────────
 let settings: DigikabuSettings | null = null
 let timeWidgetRoot: ReturnType<typeof createRoot> | null = null
 let timeWidgetContainer: HTMLElement | null = null
@@ -26,27 +30,23 @@ let unsubscribe: (() => void) | null = null
 let bgEffectRoot: ReturnType<typeof createRoot> | null = null
 let bgEffectContainer: HTMLElement | null = null
 
-// ── Init ────────────────────────────────────────────────
 async function init() {
   settings = await getSettings()
   applySettings(settings)
-
   unsubscribe = onSettingsChange((newSettings) => {
     settings = newSettings
     applySettings(newSettings)
   })
-
   setupMessageListener()
 }
 
-// ── Apply settings ──────────────────────────────────────
 function applySettings(s: DigikabuSettings) {
   removeThemeClasses()
-
   if (s.theme !== 'standard') {
     applyThemeClass(s.theme)
     applyBackground(s)
     mountTimeWidget(s)
+    observeAndEnhance()
   } else {
     removeTimeWidget()
     removeBackgroundEffect()
@@ -54,22 +54,20 @@ function applySettings(s: DigikabuSettings) {
   }
 }
 
-// ── Background: WebGL (React) or CSS glassmorphism ──────
 function applyBackground(s: DigikabuSettings) {
   if (s.backgroundEffect === 'none') {
-    // CSS-only glassmorphism ambient — no React/WebGL needed
     removeBackgroundEffect()
     createAmbientParticles()
   } else {
-    // React-based WebGL background (LightPillar or FloatingLines)
     removeAmbientParticles()
     mountBackgroundEffect(s)
   }
 }
 
+// Mountet den WebGL-Effekt in einem Shadow DOM mit z-index: -1,
+// damit er hinter dem gesamten Seiteninhalt bleibt.
 function mountBackgroundEffect(s: DigikabuSettings) {
   removeBackgroundEffect()
-
   if (s.theme === 'standard') return
 
   bgEffectContainer = document.createElement('div')
@@ -102,13 +100,13 @@ function removeAmbientParticles() {
   document.getElementById('__digikabu-ambient')?.remove()
 }
 
-// ── TimeWidget ──────────────────────────────────────────
+// Mountet das Widget in einem Shadow DOM direkt in den Seiteninhalt.
+// Auf /Stundenplan nach der Überschrift, auf /Main vor "Aktuelle Termine".
+// Bei geteiltem Stundenplan ohne gespeicherte Seite: erst SideDialog zeigen.
 function mountTimeWidget(s: DigikabuSettings) {
   const url = window.location.href
-
   if (!url.includes('/Main') && !url.includes('/Stundenplan')) return
 
-  // Find injection point
   let anchor: Element | null = null
   let insertMode: 'before' | 'after' = 'after'
 
@@ -137,7 +135,6 @@ function mountTimeWidget(s: DigikabuSettings) {
   timeWidgetContainer = document.createElement('div')
   timeWidgetContainer.id = '__digikabu-widget-host'
   timeWidgetContainer.style.cssText = 'display: contents;'
-
   shadowRoot = timeWidgetContainer.attachShadow({ mode: 'open' })
 
   if (insertMode === 'before') {
@@ -174,6 +171,7 @@ function mountTimeWidget(s: DigikabuSettings) {
   }
 }
 
+// Geteilter Stundenplan erkennbar an SVGs mit width="50%"
 function hasSplitSchedule(): boolean {
   return !!document.querySelector('svg[width="50%"]')
 }
@@ -188,7 +186,7 @@ function removeTimeWidget() {
   shadowRoot = null
 }
 
-// ── Message listener (popup <-> content) ────────────────
+// Empfängt Nachrichten vom Popup (Theme-Wechsel, Auto-Login-Toggle etc.)
 function setupMessageListener() {
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg.action === 'changeTheme') {
@@ -214,7 +212,6 @@ function setupMessageListener() {
   })
 }
 
-// ── Start ───────────────────────────────────────────────
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init)
 } else {

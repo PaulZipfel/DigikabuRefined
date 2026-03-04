@@ -1,3 +1,8 @@
+// ============================================================
+// src/popup/components/ThemeSection.tsx
+// Theme-Auswahl mit drei Karten und Mini-Vorschau-Grafiken.
+// ============================================================
+
 import React from 'react'
 import type { Theme } from '../../shared/types'
 

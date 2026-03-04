@@ -1,6 +1,8 @@
+// ============================================================
 // src/content/components/BackgroundEffect.tsx
-// Unified background switcher: LightPillar | FloatingLines | None
-// Theme-aware color configs for each effect
+// Switcher zwischen LightPillar, FloatingLines und keinem Effekt.
+// Enthält die theme-spezifischen Farbkonfigurationen für beide WebGL-Komponenten.
+// ============================================================
 
 import React from 'react'
 import LightPillar from './LightPillar'
@@ -11,8 +13,6 @@ interface BackgroundEffectProps {
   theme: Theme
   effect: BgType
 }
-
-// ── LightPillar per-theme config ────────────────────────
 
 const PILLAR: Record<string, {
   topColor: string
@@ -34,23 +34,16 @@ const PILLAR: Record<string, {
   },
 }
 
-// ── FloatingLines per-theme config ──────────────────────
-
-const LINES: Record<string, {
-  gradient: string[]
-}> = {
+const LINES: Record<string, { gradient: string[] }> = {
   dark: {
-    // Cyan → Purple gradient matching dark theme accent
     gradient: ['#0d4f7a', '#1a6fb5', '#4db8ff', '#7c4fff', '#5227cc'],
   },
   'dark-blue': {
-    // Blue → Sapphire gradient matching dark-blue theme
     gradient: ['#0a2a5e', '#1e40af', '#3b82f6', '#58a6ff', '#1a4f8c'],
   },
 }
 
-// ── Host container (fixed behind content) ───────────────
-
+// Fixed hinter dem gesamten Seiteninhalt, Klicks gehen durch (pointer-events: none)
 const HOST: React.CSSProperties = {
   position: 'fixed',
   top: 0,
@@ -61,8 +54,6 @@ const HOST: React.CSSProperties = {
   pointerEvents: 'none',
   overflow: 'hidden',
 }
-
-// ── Component ───────────────────────────────────────────
 
 const BackgroundEffect: React.FC<BackgroundEffectProps> = ({ theme, effect }) => {
   if (effect === 'none' || theme === 'standard') return null
@@ -94,6 +85,7 @@ const BackgroundEffect: React.FC<BackgroundEffectProps> = ({ theme, effect }) =>
   if (effect === 'floatinglines') {
     const cfg = LINES[key] || LINES.dark
     return (
+      // FloatingLines braucht pointer-events für die Maus-Interaktion
       <div style={{ ...HOST, pointerEvents: 'auto' }}>
         <FloatingLines
           linesGradient={cfg.gradient}

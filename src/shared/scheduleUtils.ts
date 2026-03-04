@@ -1,3 +1,14 @@
+// ============================================================
+// src/shared/scheduleUtils.ts
+// Stundenplan-Analyse und Zeitberechnungen für das Live-Widget.
+//
+// Wie funktioniert die Stundenplan-Erkennung?
+// Digikabu rendert den Stundenplan als SVG-Elemente. Jede Unterrichtsstunde
+// ist ein <svg> mit Y-Position und Höhe: y=0 → 1. Stunde, y=60 → 2. Stunde.
+// height=60 → Einzelstunde, height=120 → Doppelstunde usw.
+// Bei geteilten Plänen (zwei Klassen) hat das SVG width="50%".
+// ============================================================
+
 import type { TimeSlot, PeriodInfo, ScheduleAnalysis } from './types'
 
 export const TIME_SLOTS: TimeSlot[] = [
@@ -19,6 +30,8 @@ export function parseTime(timeStr: string): Date {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0)
 }
 
+// Scannt alle SVGs im DOM und bestimmt wann der Schultag endet.
+// Bei geteiltem Stundenplan werden nur SVGs der gewählten Seite ausgewertet.
 export function analyzeSchedule(userSide: 'left' | 'right' | null): ScheduleAnalysis {
   const svgElements = Array.from(document.querySelectorAll('svg'))
   let isSplitSchedule = false
@@ -39,6 +52,7 @@ export function analyzeSchedule(userSide: 'left' | 'right' | null): ScheduleAnal
     const yPos = parseFloat(svg.getAttribute('y') ?? '0')
     const height = parseFloat(svg.getAttribute('height') ?? '60')
 
+    // height >= 300 = Rahmen-SVG, keine Stunde
     if (height >= 300) continue
 
     if (width === '50%') {
@@ -47,9 +61,7 @@ export function analyzeSchedule(userSide: 'left' | 'right' | null): ScheduleAnal
       if (userSide === null) continue
     }
 
-    const endY = yPos + height
-    const endSlotIndex = Math.floor(endY / 60) - 1
-
+    const endSlotIndex = Math.floor((yPos + height) / 60) - 1
     if (endSlotIndex > highestEndSlotIndex && endSlotIndex >= 0 && endSlotIndex < TIME_SLOTS.length) {
       highestEndSlotIndex = endSlotIndex
     }
@@ -62,6 +74,8 @@ export function analyzeSchedule(userSide: 'left' | 'right' | null): ScheduleAnal
   }
 }
 
+// Gibt zurück wie viele Stunden der aktuelle Block dauert und wann er endet.
+// Doppelstunden sind im SVG ein doppelt so hohes Element (height=120 statt 60).
 export function getCurrentPeriodBlock(userSide: 'left' | 'right' | null): {
   periods: number
   endTime: Date | null
@@ -112,6 +126,8 @@ export function getCurrentPeriodBlock(userSide: 'left' | 'right' | null): {
   return { periods: 1, endTime: null, type: 'Stunde' }
 }
 
+// Hauptfunktion des Widgets — wird jede Sekunde aufgerufen.
+// Kombiniert analyzeSchedule + getCurrentPeriodBlock zu einer vollständigen PeriodInfo.
 export function getPeriodInfo(userSide: 'left' | 'right' | null): PeriodInfo {
   const now = new Date()
   const currentTime = now.getHours() * 60 + now.getMinutes()
@@ -141,6 +157,7 @@ export function getPeriodInfo(userSide: 'left' | 'right' | null): PeriodInfo {
 
     if (currentTime >= startMinutes && currentTime < endMinutes) {
       currentPeriod = slot
+      // Bei Doppelstunden das Ende des gesamten Blocks verwenden, nicht der Einzelstunde
       const actualEnd = block.endTime ?? endTime
       periodEndTime = actualEnd
       const diffMs = actualEnd.getTime() - now.getTime()
@@ -151,8 +168,7 @@ export function getPeriodInfo(userSide: 'left' | 'right' | null): PeriodInfo {
   }
 
   for (const slot of TIME_SLOTS) {
-    const startTime = parseTime(slot.start)
-    const startMinutes = startTime.getHours() * 60 + startTime.getMinutes()
+    const startMinutes = parseTime(slot.start).getHours() * 60 + parseTime(slot.start).getMinutes()
     if (startMinutes > currentTime) {
       nextPeriod = slot
       minutesUntilNext = startMinutes - currentTime
@@ -174,6 +190,7 @@ export function getPeriodInfo(userSide: 'left' | 'right' | null): PeriodInfo {
   }
 }
 
+// "05:03" oder "1:05:03" wenn >= 1 Stunde
 export function formatCountdown(minutes: number, seconds: number): string {
   if (minutes >= 60) {
     const h = Math.floor(minutes / 60)
@@ -183,6 +200,7 @@ export function formatCountdown(minutes: number, seconds: number): string {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
+// "45 Min" oder "1:30h"
 export function formatDuration(totalMinutes: number): string {
   if (totalMinutes >= 60) {
     const h = Math.floor(totalMinutes / 60)

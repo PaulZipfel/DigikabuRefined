@@ -7356,6 +7356,73 @@ var DigikabuContent = (() => {
     }
     document.body.appendChild(container);
   }
+  function enhanceTermineTable() {
+    const tables = document.querySelectorAll(
+      "table.table-striped, .table.table-striped"
+    );
+    if (!tables.length) return;
+    const today = /* @__PURE__ */ new Date();
+    const dd = String(today.getDate()).padStart(2, "0");
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const todayStr = dd + "." + mm + "." + today.getFullYear();
+    tables.forEach((table) => {
+      table.style.position = "relative";
+      const rows = table.querySelectorAll("tbody tr");
+      rows.forEach((row) => {
+        const cells = row.querySelectorAll("td");
+        if (cells.length < 2) return;
+        const dayCell = cells[0];
+        const dateCell = cells[1];
+        const descCell = cells[2] || null;
+        if (dayCell.style.color) {
+          dayCell.dataset.dkColor = dayCell.style.color === "red" ? "red" : "blue";
+          dayCell.style.removeProperty("color");
+        }
+        if (dateCell.style.color) {
+          dateCell.dataset.dkColor = dateCell.style.color === "red" ? "red" : "blue";
+          dateCell.style.removeProperty("color");
+        }
+        if (descCell) {
+          descCell.style.removeProperty("color");
+          descCell.style.removeProperty("background");
+          descCell.style.removeProperty("background-color");
+        }
+        const dateTxt = (dateCell.textContent || "").trim();
+        if (dateTxt.startsWith(todayStr)) {
+          row.classList.add("dk-today");
+        }
+      });
+    });
+    console.log("[Digikabu] Termine table enhanced");
+  }
+  function enhanceSVGTimetable() {
+    const svgs = document.querySelectorAll('svg[style*="background-color"]');
+    svgs.forEach((svg) => {
+      svg.style.removeProperty("background-color");
+      svg.style.background = "transparent";
+    });
+    const tables = document.querySelectorAll('table[style*="font-family"]');
+    tables.forEach((table) => {
+      table.style.removeProperty("font-family");
+    });
+    if (svgs.length > 0) console.log("[Digikabu] SVG timetable enhanced");
+  }
+  function observeAndEnhance() {
+    enhanceTermineTable();
+    enhanceSVGTimetable();
+    const observer = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        for (const node of Array.from(m.addedNodes)) {
+          if (node instanceof HTMLElement) {
+            if (node.querySelector?.("table.table-striped")) enhanceTermineTable();
+            if (node.querySelector?.('svg[style*="background-color"]') || node.tagName === "svg") enhanceSVGTimetable();
+          }
+        }
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    return observer;
+  }
 
   // src/content/components/TimeWidget.tsx
   var import_react = __toESM(require_react(), 1);
@@ -7400,8 +7467,7 @@ var DigikabuContent = (() => {
         if (userSide === "right" && xPos !== "50%") continue;
         if (userSide === null) continue;
       }
-      const endY = yPos + height;
-      const endSlotIndex = Math.floor(endY / 60) - 1;
+      const endSlotIndex = Math.floor((yPos + height) / 60) - 1;
       if (endSlotIndex > highestEndSlotIndex && endSlotIndex >= 0 && endSlotIndex < TIME_SLOTS.length) {
         highestEndSlotIndex = endSlotIndex;
       }
@@ -7476,8 +7542,7 @@ var DigikabuContent = (() => {
       }
     }
     for (const slot of TIME_SLOTS) {
-      const startTime = parseTime(slot.start);
-      const startMinutes = startTime.getHours() * 60 + startTime.getMinutes();
+      const startMinutes = parseTime(slot.start).getHours() * 60 + parseTime(slot.start).getMinutes();
       if (startMinutes > currentTime) {
         nextPeriod = slot;
         minutesUntilNext = startMinutes - currentTime;
@@ -34572,11 +34637,9 @@ void main() {
   };
   var LINES = {
     dark: {
-      // Cyan → Purple gradient matching dark theme accent
       gradient: ["#0d4f7a", "#1a6fb5", "#4db8ff", "#7c4fff", "#5227cc"]
     },
     "dark-blue": {
-      // Blue → Sapphire gradient matching dark-blue theme
       gradient: ["#0a2a5e", "#1e40af", "#3b82f6", "#58a6ff", "#1a4f8c"]
     }
   };
@@ -34615,20 +34678,23 @@ void main() {
     }
     if (effect === "floatinglines") {
       const cfg = LINES[key] || LINES.dark;
-      return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { style: { ...HOST, pointerEvents: "auto" }, children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-        FloatingLines_default,
-        {
-          linesGradient: cfg.gradient,
-          enabledWaves: ["top", "middle", "bottom"],
-          lineCount: 5,
-          lineDistance: 5,
-          bendRadius: 5,
-          bendStrength: -0.5,
-          interactive: true,
-          parallax: true,
-          mixBlendMode: "screen"
-        }
-      ) });
+      return (
+        // FloatingLines braucht pointer-events für die Maus-Interaktion
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { style: { ...HOST, pointerEvents: "auto" }, children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+          FloatingLines_default,
+          {
+            linesGradient: cfg.gradient,
+            enabledWaves: ["top", "middle", "bottom"],
+            lineCount: 5,
+            lineDistance: 5,
+            bendRadius: 5,
+            bendStrength: -0.5,
+            interactive: true,
+            parallax: true,
+            mixBlendMode: "screen"
+          }
+        ) })
+      );
     }
     return null;
   };
@@ -34663,6 +34729,7 @@ void main() {
       applyThemeClass(s.theme);
       applyBackground(s);
       mountTimeWidget(s);
+      observeAndEnhance();
     } else {
       removeTimeWidget();
       removeBackgroundEffect();
