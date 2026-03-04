@@ -584,3 +584,14 @@ html, body {
 .section-disabled .section-title {
   opacity: 0.6;
 }
+
+.footer-github {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: rgba(232,234,240,0.35);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  margin-left: auto;
+}
+.footer-github:hover { color: rgba(88,166,255,0.9); }
