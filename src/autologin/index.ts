@@ -1,5 +1,3 @@
-// DIGIKABU AUTO-LOGIN — AES-256-GCM via WebCrypto
-
 interface Credentials { username: string; password: string }
 interface SecureStorage { data: string; iv: string; salt: string; timestamp: number }
 
@@ -16,7 +14,7 @@ if (win.__digikabuAutoLoginLoaded) {
   class DigikabuAutoLogin {
     private async fingerprint(): Promise<string> {
       const raw = [navigator.userAgent, navigator.language, screen.width + 'x' + screen.height].join('|')
-      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw))
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw) as BufferSource)
       return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
     }
 
@@ -24,13 +22,13 @@ if (win.__digikabuAutoLoginLoaded) {
       const fp = await this.fingerprint()
       const raw = await crypto.subtle.importKey(
         'raw',
-        new TextEncoder().encode(fp + timestamp),
+        new TextEncoder().encode(fp + timestamp) as BufferSource,
         { name: 'PBKDF2' },
         false,
         ['deriveKey']
       )
       return crypto.subtle.deriveKey(
-        { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+        { name: 'PBKDF2', salt: salt as BufferSource, iterations: 100000, hash: 'SHA-256' },
         raw,
         { name: 'AES-GCM', length: 256 },
         false,
@@ -46,9 +44,9 @@ if (win.__digikabuAutoLoginLoaded) {
         const timestamp = Date.now()
         const key = await this.deriveKey(salt, timestamp, ['encrypt'])
         const encrypted = await crypto.subtle.encrypt(
-          { name: 'AES-GCM', iv },
+          { name: 'AES-GCM', iv: iv as BufferSource },
           key,
-          new TextEncoder().encode(JSON.stringify({ username, password }))
+          new TextEncoder().encode(JSON.stringify({ username, password })) as BufferSource
         )
         const storage: SecureStorage = {
           data: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
@@ -75,7 +73,7 @@ if (win.__digikabuAutoLoginLoaded) {
         const iv = new Uint8Array(atob(s.iv).split('').map(c => c.charCodeAt(0)))
         const data = new Uint8Array(atob(s.data).split('').map(c => c.charCodeAt(0)))
         const key = await this.deriveKey(salt, s.timestamp, ['decrypt'])
-        const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data)
+        const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv as BufferSource }, key, data as BufferSource)
         return JSON.parse(new TextDecoder().decode(decrypted))
       } catch (e) {
         console.error('[AutoLogin] Decrypt failed:', e)
@@ -106,6 +104,29 @@ if (win.__digikabuAutoLoginLoaded) {
       return !!(result[SETTINGS_KEY]?.autoLogin)
     }
 
+    private detectLoginError(): { hasError: boolean; isWrongCredentials: boolean; isLocked: boolean; message: string } {
+      const alert = document.querySelector('.alert.alert-danger')
+      if (!alert) {
+        return { hasError: false, isWrongCredentials: false, isLocked: false, message: '' }
+      }
+
+      const text = alert.textContent?.toLowerCase() || ''
+      const isWrongCredentials = text.includes('falscher benutzername') ||
+                                  text.includes('passwort') ||
+                                  text.includes('wrong') ||
+                                  text.includes('invalid')
+      const isLocked = text.includes('gesperrt') ||
+                       text.includes('locked') ||
+                       text.includes('sekunden')
+
+      return {
+        hasError: true,
+        isWrongCredentials,
+        isLocked,
+        message: alert.textContent?.trim() || 'Login-Fehler',
+      }
+    }
+
     private waitForElement<T extends Element>(selector: string, timeout = 5000): Promise<T | null> {
       const start = Date.now()
       return new Promise(resolve => {
@@ -129,6 +150,36 @@ if (win.__digikabuAutoLoginLoaded) {
     private async handleLoginPage(): Promise<void> {
       if (!(await this.isAutoLoginEnabled())) return
 
+      const error = this.detectLoginError()
+
+      if (error.hasError) {
+        console.warn('[AutoLogin] Login error detected:', error.message)
+
+        if (error.isWrongCredentials) {
+          console.warn('[AutoLogin] Wrong credentials detected — clearing stored data and disabling auto-login')
+          await this.clearStoredCredentials()
+
+          this.showAutoLoginWarning(
+            '⚠️ Auto-Login deaktiviert: Falsche Anmeldedaten. Bitte manuell einloggen und erneut aktivieren.'
+          )
+          return
+        }
+
+        if (error.isLocked) {
+          // Account is temporarily locked → don't retry, just wait
+          console.warn('[AutoLogin] Account locked — will NOT retry')
+          this.showAutoLoginWarning(
+            '⏳ Account gesperrt — Auto-Login wartet. Bitte manuell erneut versuchen.'
+          )
+          return
+        }
+
+        // Any other error → also don't retry
+        console.warn('[AutoLogin] Unknown error — stopping auto-login attempt')
+        return
+      }
+
+      // ── NO ERROR → Proceed with auto-login ─────────────────
       const [userField, passField, btn] = await Promise.all([
         this.waitForElement<HTMLInputElement>('#UserName'),
         this.waitForElement<HTMLInputElement>('#Password'),
@@ -139,6 +190,7 @@ if (win.__digikabuAutoLoginLoaded) {
       userField.setAttribute('autocomplete', 'username')
       passField.setAttribute('autocomplete', 'current-password')
 
+      // If fields are already filled (e.g. browser autofill), just submit
       if (userField.value && passField.value) {
         setTimeout(() => btn.click(), 600)
         return
@@ -152,6 +204,49 @@ if (win.__digikabuAutoLoginLoaded) {
       userField.dispatchEvent(new Event('input', { bubbles: true }))
       passField.dispatchEvent(new Event('input', { bubbles: true }))
       setTimeout(() => btn.click(), 500)
+    }
+
+    // ── NEW: Show visual warning on login page ──────────────
+    private showAutoLoginWarning(message: string): void {
+      // Don't duplicate
+      if (document.getElementById('__dk-autologin-warn')) return
+
+      const el = document.createElement('div')
+      el.id = '__dk-autologin-warn'
+      el.style.cssText = `
+        position: fixed;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 99999;
+        background: rgba(255, 107, 107, 0.95);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        max-width: 500px;
+        text-align: center;
+        animation: dkWarnSlide 0.4s ease-out;
+      `
+      el.textContent = message
+
+      // Add animation
+      const style = document.createElement('style')
+      style.textContent = `
+        @keyframes dkWarnSlide {
+          from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+      `
+      document.head.appendChild(style)
+      document.body.appendChild(el)
+
+      // Auto-remove after 15 seconds
+      setTimeout(() => el.remove(), 15000)
     }
 
     private setupClickCapture(): void {

@@ -1,7 +1,12 @@
+// src/shared/types.ts
+
 export type Theme = 'standard' | 'dark' | 'dark-blue'
+
+export type BackgroundEffect = 'none' | 'lightpillar' | 'floatinglines'
 
 export interface DigikabuSettings {
   theme: Theme
+  backgroundEffect: BackgroundEffect
   autoLogin: boolean
   sidePreference: 'left' | 'right' | null
 }

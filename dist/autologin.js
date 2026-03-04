@@ -92,6 +92,21 @@ var DigikabuAutoLogin = (() => {
         const result = await chrome.storage.local.get(SETTINGS_KEY);
         return !!result[SETTINGS_KEY]?.autoLogin;
       }
+      detectLoginError() {
+        const alert = document.querySelector(".alert.alert-danger");
+        if (!alert) {
+          return { hasError: false, isWrongCredentials: false, isLocked: false, message: "" };
+        }
+        const text = alert.textContent?.toLowerCase() || "";
+        const isWrongCredentials = text.includes("falscher benutzername") || text.includes("passwort") || text.includes("wrong") || text.includes("invalid");
+        const isLocked = text.includes("gesperrt") || text.includes("locked") || text.includes("sekunden");
+        return {
+          hasError: true,
+          isWrongCredentials,
+          isLocked,
+          message: alert.textContent?.trim() || "Login-Fehler"
+        };
+      }
       waitForElement(selector, timeout = 5e3) {
         const start = Date.now();
         return new Promise((resolve) => {
@@ -112,6 +127,27 @@ var DigikabuAutoLogin = (() => {
       }
       async handleLoginPage() {
         if (!await this.isAutoLoginEnabled()) return;
+        const error = this.detectLoginError();
+        if (error.hasError) {
+          console.warn("[AutoLogin] Login error detected:", error.message);
+          if (error.isWrongCredentials) {
+            console.warn("[AutoLogin] Wrong credentials detected \u2014 clearing stored data and disabling auto-login");
+            await this.clearStoredCredentials();
+            this.showAutoLoginWarning(
+              "\u26A0\uFE0F Auto-Login deaktiviert: Falsche Anmeldedaten. Bitte manuell einloggen und erneut aktivieren."
+            );
+            return;
+          }
+          if (error.isLocked) {
+            console.warn("[AutoLogin] Account locked \u2014 will NOT retry");
+            this.showAutoLoginWarning(
+              "\u23F3 Account gesperrt \u2014 Auto-Login wartet. Bitte manuell erneut versuchen."
+            );
+            return;
+          }
+          console.warn("[AutoLogin] Unknown error \u2014 stopping auto-login attempt");
+          return;
+        }
         const [userField, passField, btn] = await Promise.all([
           this.waitForElement("#UserName"),
           this.waitForElement("#Password"),
@@ -131,6 +167,42 @@ var DigikabuAutoLogin = (() => {
         userField.dispatchEvent(new Event("input", { bubbles: true }));
         passField.dispatchEvent(new Event("input", { bubbles: true }));
         setTimeout(() => btn.click(), 500);
+      }
+      // ── NEW: Show visual warning on login page ──────────────
+      showAutoLoginWarning(message) {
+        if (document.getElementById("__dk-autologin-warn")) return;
+        const el = document.createElement("div");
+        el.id = "__dk-autologin-warn";
+        el.style.cssText = `
+        position: fixed;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 99999;
+        background: rgba(255, 107, 107, 0.95);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        max-width: 500px;
+        text-align: center;
+        animation: dkWarnSlide 0.4s ease-out;
+      `;
+        el.textContent = message;
+        const style = document.createElement("style");
+        style.textContent = `
+        @keyframes dkWarnSlide {
+          from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+      `;
+        document.head.appendChild(style);
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 15e3);
       }
       setupClickCapture() {
         this.waitForElement('button.btn.btn-primary[type="submit"]').then((btn) => {

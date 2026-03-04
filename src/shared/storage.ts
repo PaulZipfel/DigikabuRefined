@@ -1,9 +1,12 @@
+// src/shared/storage.ts
+
 import type { DigikabuSettings, Theme } from './types'
 
 const SETTINGS_KEY = 'digikabu-settings-v2'
 
 export const DEFAULT_SETTINGS: DigikabuSettings = {
   theme: 'standard',
+  backgroundEffect: 'lightpillar',  // Default: LightPillar when dark mode active
   autoLogin: false,
   sidePreference: null,
 }

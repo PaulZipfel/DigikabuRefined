@@ -1,337 +1,1118 @@
-/* ═══════════════════════════════════════════════════
-   DIGIKABU ENHANCER — CONTENT STYLES
-   Injected into digikabu.de
-   ═══════════════════════════════════════════════════ */
+/* ============================================================
+   Digikabu Enhancer — Content Styles
+   Injected into digikabu.de via Chrome Extension
+   Supports: .digikabu-dark  |  .digikabu-dark-blue
+   NOTE: Navbar is dark-themed but layout preserved.
+   ============================================================ */
 
-/* ── Ambient Particles ─────────────────────────────── */
-.digikabu-ambient-container {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
-  overflow: hidden;
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ── Shared Custom Properties ─────────────────────────────── */
+.digikabu-dark,
+.digikabu-dark-blue {
+  --dg-font: 'Outfit', system-ui, sans-serif;
+  --dg-font-mono: 'JetBrains Mono', monospace;
+  --dg-radius: 14px;
+  --dg-radius-sm: 8px;
+  --dg-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.digikabu-particle {
-  position: absolute;
-  opacity: 0;
-  border-radius: 2px;
-  animation: dk-float 20s infinite linear;
+/* Dark (Cyan) Theme — TRUE BLACK */
+.digikabu-dark {
+  --dg-bg:             #080808;
+  --dg-bg-2:           #0e0e0e;
+  --dg-surface:        rgba(255, 255, 255, 0.04);
+  --dg-surface-hover:  rgba(255, 255, 255, 0.07);
+  --dg-border:         rgba(77, 184, 255, 0.15);
+  --dg-border-bright:  rgba(77, 184, 255, 0.35);
+  --dg-text:           #e8edf5;
+  --dg-text-muted:     rgba(232, 237, 245, 0.6);
+  --dg-accent:         #4db8ff;
+  --dg-accent-soft:    rgba(77, 184, 255, 0.12);
+  --dg-accent-glow:    rgba(77, 184, 255, 0.25);
+  --dg-red:            #ff6b8a;
+  --dg-red-soft:       rgba(255, 107, 138, 0.12);
+  --dg-stripe:         rgba(77, 184, 255, 0.035);
+  --dg-shadow:         0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --dg-glow:           0 0 40px rgba(77, 184, 255, 0.08);
 }
 
-body.digikabu-dark .digikabu-particle {
-  background: linear-gradient(45deg, #4db8ff, transparent, #0d7377);
-  box-shadow: 0 0 30px rgba(77, 184, 255, 0.15);
+/* Dark Blue (GitHub) Theme */
+.digikabu-dark-blue {
+  --dg-bg:             #0d1117;
+  --dg-bg-2:           #161b22;
+  --dg-surface:        rgba(255, 255, 255, 0.035);
+  --dg-surface-hover:  rgba(255, 255, 255, 0.06);
+  --dg-border:         rgba(48, 54, 61, 0.9);
+  --dg-border-bright:  rgba(88, 166, 255, 0.4);
+  --dg-text:           #c9d1d9;
+  --dg-text-muted:     rgba(139, 148, 158, 0.8);
+  --dg-accent:         #58a6ff;
+  --dg-accent-soft:    rgba(88, 166, 255, 0.1);
+  --dg-accent-glow:    rgba(88, 166, 255, 0.2);
+  --dg-red:            #ff7b93;
+  --dg-red-soft:       rgba(255, 123, 147, 0.1);
+  --dg-stripe:         rgba(88, 166, 255, 0.03);
+  --dg-shadow:         0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --dg-glow:           0 0 40px rgba(88, 166, 255, 0.06);
 }
 
-body.digikabu-dark-blue .digikabu-particle {
-  background: linear-gradient(45deg, #58a6ff, transparent, #238636);
-  box-shadow: 0 0 30px rgba(88, 166, 255, 0.15);
+
+/* ══════════════════════════════════════════════════════════
+   GLOBAL PAGE RESET
+   ══════════════════════════════════════════════════════════ */
+
+/* Font override — exclude glyphicons (they need their icon font) */
+.digikabu-dark *:not(.glyphicon):not([class*="glyphicon-"]):not([class*="fa-"]):not(.fa),
+.digikabu-dark-blue *:not(.glyphicon):not([class*="glyphicon-"]):not([class*="fa-"]):not(.fa) {
+  font-family: var(--dg-font) !important;
 }
 
-.digikabu-particle-1 { width: 200px; height: 1px; top: 15%; left: -50px; animation-delay: 0s; animation-duration: 25s; transform: rotate(15deg); }
-.digikabu-particle-2 { width: 150px; height: 1px; top: 45%; right: -50px; animation-delay: 5s; animation-duration: 30s; transform: rotate(-20deg); }
-.digikabu-particle-3 { width: 180px; height: 1px; bottom: 35%; left: -50px; animation-delay: 10s; animation-duration: 28s; transform: rotate(25deg); }
-.digikabu-particle-4 { width: 120px; height: 1px; top: 75%; right: -50px; animation-delay: 15s; animation-duration: 22s; transform: rotate(-15deg); }
-.digikabu-particle-5 { width: 160px; height: 1px; bottom: 60%; left: -50px; animation-delay: 8s; animation-duration: 26s; transform: rotate(30deg); }
-.digikabu-particle-6 { width: 140px; height: 1px; top: 25%; right: -50px; animation-delay: 12s; animation-duration: 24s; transform: rotate(-25deg); }
-
-@keyframes dk-float {
-  0%   { transform: translateX(0) translateY(0); opacity: 0; }
-  10%  { opacity: 0.08; }
-  90%  { opacity: 0.08; }
-  100% { transform: translateX(100vw) translateY(-20px); opacity: 0; }
+/* Explicitly restore Glyphicon font */
+.digikabu-dark .glyphicon,
+.digikabu-dark [class*="glyphicon-"],
+.digikabu-dark-blue .glyphicon,
+.digikabu-dark-blue [class*="glyphicon-"] {
+  font-family: 'Glyphicons Halflings' !important;
 }
 
-/* ── Animated Background ───────────────────────────── */
-body.digikabu-dark::before,
-body.digikabu-dark-blue::before {
+/* Bigger base font */
+.digikabu-dark,
+.digikabu-dark-blue {
+  font-size: 16px !important;
+}
+
+.digikabu-dark,
+.digikabu-dark-blue {
+  background: var(--dg-bg) !important;
+  color: var(--dg-text) !important;
+  min-height: 100vh;
+}
+
+.digikabu-dark body,
+.digikabu-dark-blue body {
+  background:
+    radial-gradient(ellipse 80% 60% at 10% -10%, var(--dg-accent-glow) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 90% 110%, rgba(77, 184, 255, 0.04) 0%, transparent 70%),
+    var(--dg-bg) !important;
+  color: var(--dg-text) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   NAVIGATION BAR — Dark glass, original layout preserved
+   ══════════════════════════════════════════════════════════ */
+
+.digikabu-dark .navbar,
+.digikabu-dark .navbar-default,
+.digikabu-dark-blue .navbar,
+.digikabu-dark-blue .navbar-default {
+  background: var(--dg-bg-2) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  border-bottom: 1px solid var(--dg-border) !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), var(--dg-glow) !important;
+}
+
+.digikabu-dark .navbar-brand,
+.digikabu-dark-blue .navbar-brand {
+  color: var(--dg-text) !important;
+}
+
+.digikabu-dark .navbar-brand img,
+.digikabu-dark-blue .navbar-brand img {
+  filter: brightness(1.2) !important;
+}
+
+.digikabu-dark .navbar-nav > li > a,
+.digikabu-dark .navbar-default .navbar-nav > li > a,
+.digikabu-dark-blue .navbar-nav > li > a,
+.digikabu-dark-blue .navbar-default .navbar-nav > li > a {
+  color: var(--dg-text) !important;
+  transition: color var(--dg-transition), background var(--dg-transition) !important;
+  font-size: 15px !important;
+}
+
+.digikabu-dark .navbar-nav > li > a:hover,
+.digikabu-dark .navbar-nav > li.active > a,
+.digikabu-dark-blue .navbar-nav > li > a:hover,
+.digikabu-dark-blue .navbar-nav > li.active > a {
+  background: var(--dg-accent-soft) !important;
+  color: var(--dg-accent) !important;
+  border-radius: var(--dg-radius-sm) !important;
+}
+
+/* Navbar text (like "Paul Zipfel (FWI2)") */
+.digikabu-dark .navbar-text,
+.digikabu-dark .navbar-default .navbar-text,
+.digikabu-dark-blue .navbar-text,
+.digikabu-dark-blue .navbar-default .navbar-text {
+  color: var(--dg-text) !important;
+  font-weight: 600 !important;
+}
+
+/* Mobile toggle */
+.digikabu-dark .navbar-toggle,
+.digikabu-dark-blue .navbar-toggle {
+  border-color: var(--dg-border) !important;
+}
+.digikabu-dark .navbar-toggle .icon-bar,
+.digikabu-dark-blue .navbar-toggle .icon-bar {
+  background-color: var(--dg-text) !important;
+}
+
+/* Small text under logo */
+.digikabu-dark .navbar small,
+.digikabu-dark .navbar .small,
+.digikabu-dark-blue .navbar small,
+.digikabu-dark-blue .navbar .small {
+  color: var(--dg-text-muted) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   MAIN CONTENT & CONTAINERS
+   (Navbar is NOT touched — original BSZ header preserved)
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Z-Index Stacking: Content ABOVE LightPillar background ─ */
+.digikabu-dark .container,
+.digikabu-dark .container-fluid,
+.digikabu-dark-blue .container,
+.digikabu-dark-blue .container-fluid {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Stundenplan page wrapper */
+.digikabu-dark #stdplan,
+.digikabu-dark #umgebung,
+.digikabu-dark-blue #stdplan,
+.digikabu-dark-blue #umgebung {
+  position: relative !important;
+  z-index: 1 !important;
+}
+/* Frosted glass backdrop — ONLY weekly Stundenplan (has direct svg[width="20%"] children) */
+.digikabu-dark #umgebung:has(> svg[width="20%"]),
+.digikabu-dark-blue #umgebung:has(> svg[width="20%"]) {
+  background: rgba(10, 10, 15, 0.5) !important;
+  backdrop-filter: blur(12px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(120%) !important;
+  border-radius: 12px !important;
+  padding: 6px !important;
+  border: 1px solid var(--dg-border) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4) !important;
+}
+/* Main page daily view — lighter glass on the SVG wrapper div */
+.digikabu-dark #umgebung .hidden-xs div[style*="width:300px"],
+.digikabu-dark-blue #umgebung .hidden-xs div[style*="width:300px"] {
+  background: rgba(10, 10, 15, 0.5) !important;
+  backdrop-filter: blur(12px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(120%) !important;
+  border-radius: 10px !important;
+  padding: 4px !important;
+  border: 1px solid var(--dg-border) !important;
+}
+/* Time column (left sidebar, width=40) */
+.digikabu-dark #umgebung > svg[width="40"],
+.digikabu-dark-blue #umgebung > svg[width="40"] {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-radius: 4px;
+}
+
+/* Termine page timetable wrapper */
+.digikabu-dark .hidden-xs,
+.digikabu-dark-blue .hidden-xs {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Navbar must sit on top */
+.digikabu-dark .navbar,
+.digikabu-dark .navbar-default,
+.digikabu-dark-blue .navbar,
+.digikabu-dark-blue .navbar-default {
+  z-index: 1000 !important;
+}
+
+.digikabu-dark .container,
+.digikabu-dark .container-fluid,
+.digikabu-dark .row,
+.digikabu-dark-blue .container,
+.digikabu-dark-blue .container-fluid,
+.digikabu-dark-blue .row {
+  color: var(--dg-text) !important;
+}
+
+/* Glass panels */
+.digikabu-dark .panel,
+.digikabu-dark .panel-default,
+.digikabu-dark .card,
+.digikabu-dark .well,
+.digikabu-dark-blue .panel,
+.digikabu-dark-blue .panel-default,
+.digikabu-dark-blue .card,
+.digikabu-dark-blue .well {
+  background: var(--dg-surface) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid var(--dg-border) !important;
+  border-radius: var(--dg-radius) !important;
+  box-shadow: var(--dg-shadow) !important;
+  color: var(--dg-text) !important;
+}
+
+.digikabu-dark .panel-heading,
+.digikabu-dark .panel-body,
+.digikabu-dark .panel-footer,
+.digikabu-dark-blue .panel-heading,
+.digikabu-dark-blue .panel-body,
+.digikabu-dark-blue .panel-footer {
+  background: transparent !important;
+  border-color: var(--dg-border) !important;
+  color: var(--dg-text) !important;
+}
+
+/* Headings */
+.digikabu-dark h1, .digikabu-dark h2, .digikabu-dark h3,
+.digikabu-dark h4, .digikabu-dark h5, .digikabu-dark h6,
+.digikabu-dark-blue h1, .digikabu-dark-blue h2, .digikabu-dark-blue h3,
+.digikabu-dark-blue h4, .digikabu-dark-blue h5, .digikabu-dark-blue h6 {
+  color: var(--dg-text) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.digikabu-dark h3,
+.digikabu-dark-blue h3 {
+  font-size: 1.6rem !important;
+  background: linear-gradient(135deg, var(--dg-text) 40%, var(--dg-accent)) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  margin-bottom: 16px !important;
+}
+
+/* Links */
+.digikabu-dark a,
+.digikabu-dark-blue a {
+  color: var(--dg-accent) !important;
+  text-decoration: none !important;
+  transition: opacity var(--dg-transition) !important;
+}
+.digikabu-dark a:hover,
+.digikabu-dark-blue a:hover {
+  opacity: 0.8 !important;
+  text-decoration: underline !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   GLASSMORPHISM TABLE — "Aktuelle Termine" & all tables
+   ══════════════════════════════════════════════════════════ */
+
+.digikabu-dark table,
+.digikabu-dark .table,
+.digikabu-dark-blue table,
+.digikabu-dark-blue .table {
+  background: var(--dg-surface) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
+  border-radius: var(--dg-radius) !important;
+  overflow: hidden !important;
+  position: relative !important;
+  border: 1px solid var(--dg-border) !important;
+  outline: none !important;
+  box-shadow: var(--dg-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Top glow line */
+.digikabu-dark table::before,
+.digikabu-dark-blue table::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0; left: 15%; right: 15% !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent, var(--dg-accent), transparent) !important;
+  opacity: 0.5 !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
+}
+
+/* Rows (skip calendar — has own bg rules) */
+.digikabu-dark table:not(.saplan) > tbody > tr,
+.digikabu-dark-blue table:not(.saplan) > tbody > tr {
+  background: transparent !important;
+  transition: all var(--dg-transition) !important;
+  position: relative !important;
+  border-left: 3px solid transparent !important;
+}
+
+/* Alternating stripes (skip calendar tables — they have their own styling) */
+.digikabu-dark table:not(.saplan) > tbody > tr:nth-of-type(odd),
+.digikabu-dark .table-striped:not(.saplan) > tbody > tr:nth-of-type(odd),
+.digikabu-dark-blue table:not(.saplan) > tbody > tr:nth-of-type(odd),
+.digikabu-dark-blue .table-striped:not(.saplan) > tbody > tr:nth-of-type(odd) {
+  background: var(--dg-stripe) !important;
+}
+.digikabu-dark table:not(.saplan) > tbody > tr:nth-of-type(even),
+.digikabu-dark .table-striped:not(.saplan) > tbody > tr:nth-of-type(even),
+.digikabu-dark-blue table:not(.saplan) > tbody > tr:nth-of-type(even),
+.digikabu-dark-blue .table-striped:not(.saplan) > tbody > tr:nth-of-type(even) {
+  background: rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Row hover (skip calendar) */
+.digikabu-dark table:not(.saplan) > tbody > tr:hover {
+  background: rgba(77, 184, 255, 0.07) !important;
+  border-left-color: var(--dg-accent) !important;
+}
+.digikabu-dark-blue table:not(.saplan) > tbody > tr:hover {
+  background: rgba(88, 166, 255, 0.06) !important;
+  border-left-color: var(--dg-accent) !important;
+}
+
+/* Last row corners */
+.digikabu-dark table:not(.saplan) > tbody > tr:last-child > td:first-child,
+.digikabu-dark-blue table:not(.saplan) > tbody > tr:last-child > td:first-child { border-bottom-left-radius: var(--dg-radius) !important; }
+.digikabu-dark table:not(.saplan) > tbody > tr:last-child > td:last-child,
+.digikabu-dark-blue table:not(.saplan) > tbody > tr:last-child > td:last-child { border-bottom-right-radius: var(--dg-radius) !important; }
+
+/* Row entrance animation (skip calendar — too many rows) */
+.digikabu-dark table:not(.saplan) > tbody > tr,
+.digikabu-dark-blue table:not(.saplan) > tbody > tr { animation: dg-row-fadein 0.35s ease both !important; }
+.digikabu-dark table:not(.saplan) > tbody > tr:nth-child(1),  .digikabu-dark-blue table:not(.saplan) > tbody > tr:nth-child(1)  { animation-delay: 0.02s !important; }
+.digikabu-dark table:not(.saplan) > tbody > tr:nth-child(2),  .digikabu-dark-blue table:not(.saplan) > tbody > tr:nth-child(2)  { animation-delay: 0.04s !important; }
+.digikabu-dark table:not(.saplan) > tbody > tr:nth-child(3),  .digikabu-dark-blue table:not(.saplan) > tbody > tr:nth-child(3)  { animation-delay: 0.06s !important; }
+.digikabu-dark table:not(.saplan) > tbody > tr:nth-child(4),  .digikabu-dark-blue table:not(.saplan) > tbody > tr:nth-child(4)  { animation-delay: 0.08s !important; }
+.digikabu-dark table:not(.saplan) > tbody > tr:nth-child(5),  .digikabu-dark-blue table:not(.saplan) > tbody > tr:nth-child(5)  { animation-delay: 0.10s !important; }
+.digikabu-dark table:not(.saplan) > tbody > tr:nth-child(6),  .digikabu-dark-blue table:not(.saplan) > tbody > tr:nth-child(6)  { animation-delay: 0.12s !important; }
+.digikabu-dark table:not(.saplan) > tbody > tr:nth-child(7),  .digikabu-dark-blue table:not(.saplan) > tbody > tr:nth-child(7)  { animation-delay: 0.14s !important; }
+.digikabu-dark table:not(.saplan) > tbody > tr:nth-child(8),  .digikabu-dark-blue table:not(.saplan) > tbody > tr:nth-child(8)  { animation-delay: 0.16s !important; }
+.digikabu-dark table:not(.saplan) > tbody > tr:nth-child(n+9), .digikabu-dark-blue table:not(.saplan) > tbody > tr:nth-child(n+9) { animation-delay: 0.18s !important; }
+@keyframes dg-row-fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Cells */
+.digikabu-dark table td, .digikabu-dark table th,
+.digikabu-dark-blue table td, .digikabu-dark-blue table th {
+  background: transparent !important;
+  border-top: none !important;
+  color: var(--dg-text) !important;
+  padding: 13px 18px !important;
+  vertical-align: middle !important;
+  font-size: 1.02rem !important;
+  font-family: var(--dg-font) !important;
+}
+.digikabu-dark table thead th, .digikabu-dark-blue table thead th {
+  background: var(--dg-surface) !important;
+  border-bottom: 1px solid var(--dg-border-bright) !important;
+  color: var(--dg-accent) !important;
+  font-weight: 600 !important;
+  font-size: 0.88rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+}
+
+/* Inline color overrides */
+body.digikabu-dark td[style*="color: blue"], body.digikabu-dark td[style*="color:blue"],
+body.digikabu-dark-blue td[style*="color: blue"], body.digikabu-dark-blue td[style*="color:blue"] {
+  color: #ff9f6b !important; font-weight: 500 !important;
+}
+body.digikabu-dark td[style*="color: red"], body.digikabu-dark td[style*="color:red"],
+body.digikabu-dark-blue td[style*="color: red"], body.digikabu-dark-blue td[style*="color:red"] {
+  color: var(--dg-red) !important; font-weight: 500 !important;
+}
+.digikabu-dark [style*="color: blue"]:not(td), .digikabu-dark-blue [style*="color: blue"]:not(td),
+.digikabu-dark [style*="color:blue"]:not(td), .digikabu-dark-blue [style*="color:blue"]:not(td) { color: #ff9f6b !important; }
+.digikabu-dark [style*="color: red"]:not(td), .digikabu-dark-blue [style*="color: red"]:not(td) { color: var(--dg-red) !important; }
+
+/* Red-row accent — see Termine today highlight above */
+
+/* JS data attributes */
+body.digikabu-dark td[data-dk-color="blue"], body.digikabu-dark-blue td[data-dk-color="blue"] { color: #ff9f6b !important; font-weight: 500 !important; }
+body.digikabu-dark td[data-dk-color="red"], body.digikabu-dark-blue td[data-dk-color="red"] { color: var(--dg-red) !important; font-weight: 500 !important; }
+
+/* Today highlight */
+.digikabu-dark table > tbody > tr.dk-today { background: rgba(77, 184, 255, 0.1) !important; border-left: 3px solid var(--dg-accent) !important; }
+.digikabu-dark table > tbody > tr.dk-today > td:nth-child(3) { color: #fff !important; }
+.digikabu-dark-blue table > tbody > tr.dk-today { background: rgba(88, 166, 255, 0.09) !important; border-left: 3px solid var(--dg-accent) !important; }
+.digikabu-dark-blue table > tbody > tr.dk-today > td:nth-child(3) { color: #f0f6fc !important; }
+
+/* ── Termine: Today row (color: red) — intense glow ── */
+.digikabu-dark table:not(.saplan) > tbody > tr:has(td[style*="color: red"]),
+.digikabu-dark-blue table:not(.saplan) > tbody > tr:has(td[style*="color: red"]) {
+  background: rgba(255, 107, 138, 0.14) !important;
+  border-left: 4px solid var(--dg-red) !important;
+  box-shadow: inset 0 0 30px rgba(255, 107, 138, 0.08), 0 0 16px rgba(255, 107, 138, 0.1);
+  position: relative;
+}
+.digikabu-dark table:not(.saplan) > tbody > tr:has(td[style*="color: red"]) > td:last-child,
+.digikabu-dark-blue table:not(.saplan) > tbody > tr:has(td[style*="color: red"]) > td:last-child {
+  color: #fff !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 6px rgba(255, 107, 138, 0.2);
+}
+
+/* ══════════════════════════════════════════════════════════
+   SCHULAUFGABENPLAN (calendar .saplan tables)
+   Classes: .feiertag  .keinunterr  .heute
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Base saplan styling ── */
+.digikabu-dark .saplan,
+.digikabu-dark-blue .saplan {
+  border-collapse: separate !important;
+  border-spacing: 0 2px !important;
+  background: rgba(8, 8, 12, 0.8) !important;
+  backdrop-filter: blur(14px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(120%) !important;
+  border-radius: 10px !important;
+  border: 1px solid var(--dg-border) !important;
+  padding: 4px 6px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+}
+.digikabu-dark .saplan td,
+.digikabu-dark-blue .saplan td {
+  padding: 8px 12px !important;
+  border: none !important;
+  transition: background 0.2s ease;
+}
+.digikabu-dark .saplan h4,
+.digikabu-dark-blue .saplan h4 {
+  color: var(--dg-text) !important;
+  font-weight: 600 !important;
+  font-size: 1.05rem !important;
+  margin: 8px 0 4px !important;
+  padding-bottom: 6px !important;
+  border-bottom: 1px solid var(--dg-border) !important;
+}
+/* Calendar-specific stripes */
+.digikabu-dark .saplan > tbody > tr:nth-of-type(odd) { background: rgba(255,255,255,0.03) !important; }
+.digikabu-dark .saplan > tbody > tr:nth-of-type(even) { background: rgba(0,0,0,0.08) !important; }
+.digikabu-dark-blue .saplan > tbody > tr:nth-of-type(odd) { background: rgba(255,255,255,0.025) !important; }
+.digikabu-dark-blue .saplan > tbody > tr:nth-of-type(even) { background: rgba(0,0,0,0.06) !important; }
+/* Calendar rows — transitions + hover */
+.digikabu-dark .saplan > tbody > tr,
+.digikabu-dark-blue .saplan > tbody > tr {
+  transition: background 0.2s ease, box-shadow 0.2s ease !important;
+  border-left: 3px solid transparent !important;
+}
+.digikabu-dark .saplan > tbody > tr:not(.feiertag):not(.keinunterr):hover {
+  background: rgba(77, 184, 255, 0.1) !important;
+  border-left-color: rgba(77, 184, 255, 0.4) !important;
+}
+.digikabu-dark-blue .saplan > tbody > tr:not(.feiertag):not(.keinunterr):hover {
+  background: rgba(88, 166, 255, 0.08) !important;
+  border-left-color: rgba(88, 166, 255, 0.35) !important;
+}
+
+/* ── Feiertag (holidays, Ferien, Sonntage) — strong purple accent ── */
+.digikabu-dark .saplan tr.feiertag {
+  background: rgba(124, 79, 255, 0.2) !important;
+  border-left: 3px solid rgba(180, 140, 255, 0.6) !important;
+}
+.digikabu-dark .saplan tr.feiertag > td {
+  color: rgba(232, 237, 245, 0.35) !important;
+  text-decoration: line-through !important;
+  text-decoration-color: rgba(180, 140, 255, 0.35) !important;
+}
+.digikabu-dark .saplan tr.feiertag > td:first-child {
+  text-decoration: none !important;
+  color: rgba(180, 140, 255, 0.6) !important;
+}
+.digikabu-dark .saplan tr.feiertag > td:nth-child(2) {
+  text-decoration: none !important;
+  color: rgba(180, 140, 255, 0.5) !important;
+}
+.digikabu-dark .saplan tr.feiertag > td:last-child {
+  color: rgba(180, 140, 255, 0.8) !important;
+  font-style: italic;
+  text-decoration: none !important;
+}
+
+.digikabu-dark-blue .saplan tr.feiertag {
+  background: rgba(88, 130, 255, 0.16) !important;
+  border-left: 3px solid rgba(130, 170, 255, 0.55) !important;
+}
+.digikabu-dark-blue .saplan tr.feiertag > td {
+  color: rgba(201, 209, 217, 0.3) !important;
+  text-decoration: line-through !important;
+  text-decoration-color: rgba(130, 170, 255, 0.3) !important;
+}
+.digikabu-dark-blue .saplan tr.feiertag > td:first-child {
+  text-decoration: none !important;
+  color: rgba(130, 170, 255, 0.55) !important;
+}
+.digikabu-dark-blue .saplan tr.feiertag > td:nth-child(2) {
+  text-decoration: none !important;
+  color: rgba(130, 170, 255, 0.45) !important;
+}
+.digikabu-dark-blue .saplan tr.feiertag > td:last-child {
+  color: rgba(130, 170, 255, 0.75) !important;
+  font-style: italic;
+  text-decoration: none !important;
+}
+
+/* ── Kein Unterricht (Samstage, ***) — strongly faded ── */
+.digikabu-dark .saplan tr.keinunterr {
+  background: rgba(255, 255, 255, 0.015) !important;
+  border-left: 3px solid rgba(255, 255, 255, 0.06) !important;
+}
+.digikabu-dark .saplan tr.keinunterr > td {
+  color: rgba(232, 237, 245, 0.18) !important;
+}
+.digikabu-dark-blue .saplan tr.keinunterr {
+  background: rgba(255, 255, 255, 0.01) !important;
+  border-left: 3px solid rgba(255, 255, 255, 0.04) !important;
+}
+.digikabu-dark-blue .saplan tr.keinunterr > td {
+  color: rgba(201, 209, 217, 0.15) !important;
+}
+
+/* ── Heute (today) — FULL GLOW like Termine red-row ── */
+.digikabu-dark .saplan tr.heute {
+  background: rgba(77, 184, 255, 0.25) !important;
+  border-left: 4px solid var(--dg-accent) !important;
+  box-shadow: inset 0 0 40px rgba(77, 184, 255, 0.12), 0 0 24px rgba(77, 184, 255, 0.18);
+  position: relative;
+}
+.digikabu-dark .saplan tr.heute > td {
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+.digikabu-dark .saplan tr.heute > td:first-child strong {
+  color: var(--dg-accent) !important;
+  font-size: 1.1em !important;
+  text-shadow: 0 0 10px rgba(77, 184, 255, 0.5);
+}
+.digikabu-dark .saplan tr.heute > td:nth-child(2) {
+  color: var(--dg-accent) !important;
+  font-weight: 700 !important;
+}
+.digikabu-dark .saplan tr.heute > td:last-child {
+  color: #fff !important;
+  font-weight: 700 !important;
+  font-size: 1.05em !important;
+  text-shadow: 0 0 8px rgba(77, 184, 255, 0.3);
+}
+
+.digikabu-dark-blue .saplan tr.heute {
+  background: rgba(88, 166, 255, 0.22) !important;
+  border-left: 4px solid var(--dg-accent) !important;
+  box-shadow: inset 0 0 40px rgba(88, 166, 255, 0.1), 0 0 24px rgba(88, 166, 255, 0.15);
+  position: relative;
+}
+.digikabu-dark-blue .saplan tr.heute > td {
+  color: #f0f6fc !important;
+  font-weight: 600 !important;
+}
+.digikabu-dark-blue .saplan tr.heute > td:first-child strong {
+  color: var(--dg-accent) !important;
+  font-size: 1.1em !important;
+  text-shadow: 0 0 10px rgba(88, 166, 255, 0.45);
+}
+.digikabu-dark-blue .saplan tr.heute > td:nth-child(2) {
+  color: var(--dg-accent) !important;
+  font-weight: 700 !important;
+}
+.digikabu-dark-blue .saplan tr.heute > td:last-child {
+  color: #f0f6fc !important;
+  font-weight: 700 !important;
+  font-size: 1.05em !important;
+  text-shadow: 0 0 8px rgba(88, 166, 255, 0.25);
+}
+
+/* ── Normal school days with events — slightly brighter ── */
+.digikabu-dark .saplan tr:not(.feiertag):not(.keinunterr):not(.heute) > td:last-child:not(:empty) {
+  color: var(--dg-text) !important;
+}
+.digikabu-dark-blue .saplan tr:not(.feiertag):not(.keinunterr):not(.heute) > td:last-child:not(:empty) {
+  color: var(--dg-text) !important;
+}
+/* Day column — warm accent, not blue (skip calendar tables) */
+.digikabu-dark table:not(.saplan) td:first-child,
+.digikabu-dark-blue table:not(.saplan) td:first-child {
+  font-weight: 500 !important; font-size: 0.95rem !important; text-transform: uppercase !important; letter-spacing: 0.04em !important; min-width: 2.8rem !important; text-align: center !important;
+}
+.digikabu-dark table:not(.saplan) td:first-child {
+  color: #ff9f6b !important;
+}
+.digikabu-dark-blue table:not(.saplan) td:first-child {
+  color: #f0a870 !important;
+}
+/* Date column — neutral light, not accent blue */
+.digikabu-dark table:not(.saplan) td:nth-child(2), .digikabu-dark-blue table:not(.saplan) td:nth-child(2) {
+  font-family: var(--dg-font-mono) !important; font-size: 0.95rem !important; white-space: nowrap !important;
+}
+.digikabu-dark table td:nth-child(2) {
+  color: rgba(232, 237, 245, 0.75) !important;
+}
+.digikabu-dark-blue table td:nth-child(2) {
+  color: rgba(201, 209, 217, 0.75) !important;
+}
+body.digikabu-dark table:not(.saplan) td:nth-child(3), body.digikabu-dark table.table-striped td:nth-child(3) {
+  color: #f2f2f2 !important; font-weight: 400 !important; font-size: 1.08rem !important; font-family: var(--dg-font) !important;
+}
+body.digikabu-dark-blue table:not(.saplan) td:nth-child(3), body.digikabu-dark-blue table.table-striped td:nth-child(3) {
+  color: #eaf1fa !important; font-weight: 400 !important; font-size: 1.08rem !important; font-family: var(--dg-font) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   SVG STUNDENPLAN (Timetable) — DARK MODE
+   Classes: .reg .std .regStd .entfStd .vertStd
+            .sp .sp_small .text2 .inhalt .vhinweis_*
+   Outer SVG has inline: background-color:#F9F9F9
+   ══════════════════════════════════════════════════════════ */
+
+/* Kill inline background on the SVG — replace with dark tinted glass */
+.digikabu-dark svg[style*="background-color"],
+.digikabu-dark-blue svg[style*="background-color"] {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+/* Day column containers (the 20%-width SVGs with inline bg) */
+.digikabu-dark #umgebung > svg[width="20%"],
+.digikabu-dark #umgebung > svg[width="50%"] {
+  background: rgba(8, 8, 8, 0.75) !important;
+  border-radius: 6px;
+}
+.digikabu-dark-blue #umgebung > svg[width="20%"],
+.digikabu-dark-blue #umgebung > svg[width="50%"] {
+  background: rgba(13, 17, 23, 0.75) !important;
+  border-radius: 6px;
+}
+
+/* Time column rects (.reg) */
+.digikabu-dark .reg, .digikabu-dark-blue .reg {
+  fill: rgba(255, 255, 255, 0.1) !important;
+  stroke: var(--dg-border) !important;
+  stroke-width: 0.5 !important;
+}
+
+/* Lesson block rects (.std) */
+.digikabu-dark .std, .digikabu-dark-blue .std {
+  fill: rgba(255, 255, 255, 0.08) !important;
+  stroke: var(--dg-border) !important;
+  stroke-width: 0.5 !important;
+}
+
+/* Regular lesson header (.regStd) */
+.digikabu-dark .regStd {
+  fill: rgba(77, 184, 255, 0.4) !important;
+  stroke: rgba(77, 184, 255, 0.55) !important;
+  stroke-width: 0.5 !important;
+}
+.digikabu-dark-blue .regStd {
+  fill: rgba(88, 166, 255, 0.35) !important;
+  stroke: rgba(88, 166, 255, 0.5) !important;
+  stroke-width: 0.5 !important;
+}
+
+/* Cancelled lesson header (.entfStd) */
+.digikabu-dark .entfStd {
+  fill: rgba(255, 107, 138, 0.45) !important;
+  stroke: rgba(255, 107, 138, 0.65) !important;
+  stroke-width: 0.5 !important;
+}
+.digikabu-dark-blue .entfStd {
+  fill: rgba(255, 123, 147, 0.4) !important;
+  stroke: rgba(255, 123, 147, 0.6) !important;
+  stroke-width: 0.5 !important;
+}
+
+/* Substitution header (.vertretStd) */
+.digikabu-dark .vertretStd,
+.digikabu-dark .vertStd {
+  fill: rgba(74, 222, 128, 0.35) !important;
+  stroke: rgba(74, 222, 128, 0.5) !important;
+  stroke-width: 0.5 !important;
+}
+.digikabu-dark-blue .vertretStd,
+.digikabu-dark-blue .vertStd {
+  fill: rgba(74, 222, 128, 0.3) !important;
+  stroke: rgba(74, 222, 128, 0.45) !important;
+  stroke-width: 0.5 !important;
+}
+
+/* Today's weekday header (.weekdayToday) */
+.digikabu-dark .weekdayToday {
+  fill: rgba(77, 184, 255, 0.5) !important;
+  stroke: rgba(77, 184, 255, 0.7) !important;
+  stroke-width: 1.5 !important;
+}
+.digikabu-dark-blue .weekdayToday {
+  fill: rgba(88, 166, 255, 0.45) !important;
+  stroke: rgba(88, 166, 255, 0.65) !important;
+  stroke-width: 1.5 !important;
+}
+
+/* Teacher / Subject / Room text */
+.digikabu-dark .sp, .digikabu-dark .sp_small {
+  fill: #f0f4ff !important;
+  font-family: var(--dg-font) !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+}
+.digikabu-dark-blue .sp, .digikabu-dark-blue .sp_small {
+  fill: #dce5f0 !important;
+  font-family: var(--dg-font) !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+}
+
+/* Full-width lesson headers use .sp (already bigger originally) */
+.digikabu-dark .sp {
+  font-size: 13px !important;
+}
+.digikabu-dark-blue .sp {
+  font-size: 13px !important;
+}
+
+/* Time numbers */
+.digikabu-dark .text2 {
+  fill: rgba(77, 184, 255, 0.95) !important;
+  font-family: var(--dg-font-mono) !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+}
+.digikabu-dark-blue .text2 {
+  fill: rgba(88, 166, 255, 0.9) !important;
+  font-family: var(--dg-font-mono) !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+}
+
+/* Lesson content text */
+.digikabu-dark .inhalt, .digikabu-dark .inhalt tspan {
+  fill: rgba(221, 228, 240, 0.9) !important;
+  font-size: 12px !important;
+}
+.digikabu-dark-blue .inhalt, .digikabu-dark-blue .inhalt tspan {
+  fill: rgba(201, 209, 217, 0.85) !important;
+  font-size: 12px !important;
+}
+
+/* Substitution notice */
+.digikabu-dark .vhinweis_vertr, .digikabu-dark .vhinw_font, .digikabu-dark .vhinw_font_small {
+  fill: rgba(74, 222, 128, 0.95) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+.digikabu-dark-blue .vhinweis_vertr, .digikabu-dark-blue .vhinw_font, .digikabu-dark-blue .vhinw_font_small {
+  fill: rgba(74, 222, 128, 0.9) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+
+/* Cancellation notice */
+.digikabu-dark .vhinweis_entf, .digikabu-dark-blue .vhinweis_entf {
+  fill: var(--dg-red) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+
+/* Date badge (darkgreen span above timetable) */
+.digikabu-dark span[style*="background-color:darkgreen"],
+.digikabu-dark-blue span[style*="background-color:darkgreen"] {
+  background-color: var(--dg-accent) !important;
+  background: linear-gradient(135deg, var(--dg-accent), rgba(77, 184, 255, 0.7)) !important;
+  color: #000 !important;
+  border-radius: 6px !important;
+  font-weight: 700 !important;
+  padding: 4px 24px !important;
+  box-shadow: 0 2px 12px var(--dg-accent-glow) !important;
+}
+
+/* Back/Forward nav buttons */
+.digikabu-dark #btnback, .digikabu-dark #btnforw,
+.digikabu-dark-blue #btnback, .digikabu-dark-blue #btnforw {
+  background: var(--dg-surface) !important;
+  border: 1px solid var(--dg-border) !important;
+  border-radius: var(--dg-radius-sm) !important;
+  color: var(--dg-text) !important;
+}
+.digikabu-dark #btnback:hover, .digikabu-dark #btnforw:hover,
+.digikabu-dark-blue #btnback:hover, .digikabu-dark-blue #btnforw:hover {
+  background: var(--dg-accent-soft) !important;
+  border-color: var(--dg-border-bright) !important;
+}
+.digikabu-dark #btnback .glyphicon, .digikabu-dark #btnforw .glyphicon,
+.digikabu-dark-blue #btnback .glyphicon, .digikabu-dark-blue #btnforw .glyphicon {
+  color: var(--dg-accent) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   FORMS & INPUTS
+   ══════════════════════════════════════════════════════════ */
+
+.digikabu-dark input, .digikabu-dark select, .digikabu-dark textarea, .digikabu-dark .form-control,
+.digikabu-dark-blue input, .digikabu-dark-blue select, .digikabu-dark-blue textarea, .digikabu-dark-blue .form-control {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid var(--dg-border) !important;
+  border-radius: var(--dg-radius-sm) !important;
+  color: var(--dg-text) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(8px) !important;
+}
+.digikabu-dark input:focus, .digikabu-dark select:focus, .digikabu-dark textarea:focus, .digikabu-dark .form-control:focus,
+.digikabu-dark-blue input:focus, .digikabu-dark-blue select:focus, .digikabu-dark-blue textarea:focus, .digikabu-dark-blue .form-control:focus {
+  border-color: var(--dg-border-bright) !important;
+  box-shadow: 0 0 0 3px var(--dg-accent-soft) !important;
+  outline: none !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+}
+.digikabu-dark input::placeholder, .digikabu-dark textarea::placeholder,
+.digikabu-dark-blue input::placeholder, .digikabu-dark-blue textarea::placeholder {
+  color: var(--dg-text-muted) !important;
+}
+.digikabu-dark label, .digikabu-dark-blue label { color: var(--dg-text) !important; font-weight: 500 !important; }
+.digikabu-dark select option, .digikabu-dark-blue select option { background: var(--dg-bg-2) !important; color: var(--dg-text) !important; }
+
+
+/* ══════════════════════════════════════════════════════════
+   BUTTONS
+   ══════════════════════════════════════════════════════════ */
+
+.digikabu-dark .btn, .digikabu-dark button,
+.digikabu-dark-blue .btn, .digikabu-dark-blue button {
+  border-radius: var(--dg-radius-sm) !important;
+  font-weight: 500 !important;
+  transition: all var(--dg-transition) !important;
+  border: 1px solid var(--dg-border) !important;
+}
+.digikabu-dark .btn-default, .digikabu-dark-blue .btn-default {
+  background: var(--dg-surface) !important; color: var(--dg-text) !important;
+}
+.digikabu-dark .btn-default:hover, .digikabu-dark-blue .btn-default:hover {
+  background: var(--dg-surface-hover) !important; border-color: var(--dg-border-bright) !important;
+}
+.digikabu-dark .btn-primary, .digikabu-dark-blue .btn-primary {
+  background: var(--dg-accent-soft) !important; color: var(--dg-accent) !important; border-color: var(--dg-border-bright) !important;
+  box-shadow: 0 2px 12px var(--dg-accent-glow) !important;
+}
+.digikabu-dark .btn-primary:hover, .digikabu-dark-blue .btn-primary:hover {
+  background: var(--dg-accent-glow) !important; transform: translateY(-1px) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   ALERTS & BADGES
+   ══════════════════════════════════════════════════════════ */
+
+.digikabu-dark .alert, .digikabu-dark-blue .alert {
+  background: var(--dg-surface) !important; backdrop-filter: blur(12px) !important;
+  border-radius: var(--dg-radius) !important; border: 1px solid var(--dg-border) !important; color: var(--dg-text) !important;
+}
+.digikabu-dark .alert-info, .digikabu-dark-blue .alert-info {
+  border-color: var(--dg-accent) !important; background: var(--dg-accent-soft) !important; color: var(--dg-accent) !important;
+}
+.digikabu-dark .badge, .digikabu-dark-blue .badge {
+  background: var(--dg-accent-soft) !important; color: var(--dg-accent) !important; border-radius: 100px !important; font-weight: 600 !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   SCROLLBAR
+   ══════════════════════════════════════════════════════════ */
+
+.digikabu-dark ::-webkit-scrollbar, .digikabu-dark-blue ::-webkit-scrollbar { width: 6px; height: 6px; }
+.digikabu-dark ::-webkit-scrollbar-track, .digikabu-dark-blue ::-webkit-scrollbar-track { background: transparent; }
+.digikabu-dark ::-webkit-scrollbar-thumb, .digikabu-dark-blue ::-webkit-scrollbar-thumb { background: var(--dg-border); border-radius: 100px; }
+.digikabu-dark ::-webkit-scrollbar-thumb:hover, .digikabu-dark-blue ::-webkit-scrollbar-thumb:hover { background: var(--dg-border-bright); }
+
+
+/* ══════════════════════════════════════════════════════════
+   MISC PAGE ELEMENTS
+   ══════════════════════════════════════════════════════════ */
+
+.digikabu-dark hr, .digikabu-dark-blue hr { border-color: var(--dg-border) !important; opacity: 0.5 !important; }
+.digikabu-dark .text-muted, .digikabu-dark-blue .text-muted { color: var(--dg-text-muted) !important; }
+.digikabu-dark .text-primary, .digikabu-dark-blue .text-primary { color: var(--dg-accent) !important; }
+.digikabu-dark .text-danger, .digikabu-dark-blue .text-danger { color: var(--dg-red) !important; }
+.digikabu-dark .page-header, .digikabu-dark-blue .page-header { border-bottom-color: var(--dg-border) !important; }
+
+/* Modals */
+.digikabu-dark .modal-content, .digikabu-dark-blue .modal-content {
+  background: var(--dg-bg-2) !important; backdrop-filter: blur(24px) !important;
+  border: 1px solid var(--dg-border) !important; border-radius: var(--dg-radius) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7) !important; color: var(--dg-text) !important;
+}
+.digikabu-dark .modal-header, .digikabu-dark .modal-footer,
+.digikabu-dark-blue .modal-header, .digikabu-dark-blue .modal-footer { border-color: var(--dg-border) !important; }
+.digikabu-dark .modal-backdrop, .digikabu-dark-blue .modal-backdrop { background: rgba(0, 0, 0, 0.7) !important; }
+
+/* Dropdowns */
+.digikabu-dark .dropdown-menu, .digikabu-dark-blue .dropdown-menu {
+  background: var(--dg-bg-2) !important; backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--dg-border) !important; border-radius: var(--dg-radius-sm) !important;
+}
+.digikabu-dark .dropdown-menu > li > a, .digikabu-dark-blue .dropdown-menu > li > a { color: var(--dg-text) !important; }
+.digikabu-dark .dropdown-menu > li > a:hover, .digikabu-dark-blue .dropdown-menu > li > a:hover {
+  background: var(--dg-accent-soft) !important; color: var(--dg-accent) !important;
+}
+.digikabu-dark .divider, .digikabu-dark-blue .divider { background-color: var(--dg-border) !important; }
+
+
+/* ══════════════════════════════════════════════════════════
+   GLASSMORPHISM AMBIENT BACKGROUND (CSS-only fallback)
+   Used when backgroundEffect === 'none'
+   ══════════════════════════════════════════════════════════ */
+
+.digikabu-ambient-container { position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; }
+
+/* ── Mesh gradient base layer ── */
+.digikabu-ambient-container::before {
   content: '';
-  position: fixed;
+  position: absolute;
   inset: 0;
-  animation: dk-gradient 30s ease infinite;
-  z-index: -2;
-  pointer-events: none;
-  background-size: 400% 400%;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+.digikabu-dark .digikabu-ambient-container::before {
+  opacity: 1;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 20%, rgba(77,184,255,0.08), transparent),
+    radial-gradient(ellipse 60% 80% at 85% 70%, rgba(124,79,255,0.07), transparent),
+    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(13,115,119,0.06), transparent);
+}
+.digikabu-dark-blue .digikabu-ambient-container::before {
+  opacity: 1;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 20%, rgba(88,166,255,0.07), transparent),
+    radial-gradient(ellipse 60% 80% at 85% 70%, rgba(30,64,175,0.08), transparent),
+    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(48,105,255,0.05), transparent);
 }
 
-body.digikabu-dark::before {
-  background: linear-gradient(135deg, #1a1a1a 0%, #0d1117 50%, #1a1a1a 100%);
+/* ── Frosted glass panels ── */
+.digikabu-ambient-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1.2s ease 0.3s;
+}
+.digikabu-dark .digikabu-ambient-container::after,
+.digikabu-dark-blue .digikabu-ambient-container::after {
+  opacity: 1;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.012) 0%, transparent 40%),
+    linear-gradient(225deg, rgba(255,255,255,0.008) 0%, transparent 50%);
 }
 
-body.digikabu-dark-blue::before {
-  background: linear-gradient(135deg, #0f1419 0%, #0d1117 30%, #161b22 70%, #0f1419 100%);
+/* ── Floating orbs ── */
+.digikabu-particle { position: absolute; border-radius: 50%; opacity: 0; animation: dg-orb-drift linear infinite; }
+
+/* Dark theme orbs — larger, softer, glass-like */
+.digikabu-dark .digikabu-particle-1 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(77,184,255,0.12) 0%, rgba(77,184,255,0.04) 40%, transparent 70%);
+  filter: blur(80px);
+  top: -15%; left: -10%;
+  animation-duration: 25s; opacity: 1;
+}
+.digikabu-dark .digikabu-particle-2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(124,79,255,0.1) 0%, rgba(124,79,255,0.03) 40%, transparent 70%);
+  filter: blur(90px);
+  top: 20%; right: -8%;
+  animation-duration: 30s; animation-delay: -8s; opacity: 1;
+}
+.digikabu-dark .digikabu-particle-3 {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(13,115,119,0.14) 0%, rgba(13,115,119,0.04) 40%, transparent 70%);
+  filter: blur(70px);
+  bottom: 10%; left: 15%;
+  animation-duration: 22s; animation-delay: -14s; opacity: 1;
+}
+.digikabu-dark .digikabu-particle-4 {
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, rgba(77,184,255,0.06) 0%, transparent 60%);
+  filter: blur(100px);
+  bottom: -10%; right: 10%;
+  animation-duration: 28s; animation-delay: -5s; opacity: 1;
+}
+.digikabu-dark .digikabu-particle-5 {
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(77,184,255,0.15) 0%, transparent 60%);
+  filter: blur(50px);
+  top: 55%; left: 40%;
+  animation-duration: 18s; animation-delay: -10s; opacity: 0.7;
+}
+.digikabu-dark .digikabu-particle-6 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(124,79,255,0.08) 0%, transparent 60%);
+  filter: blur(85px);
+  top: 70%; right: 25%;
+  animation-duration: 32s; animation-delay: -18s; opacity: 1;
 }
 
-@keyframes dk-gradient {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+/* Dark Blue theme orbs */
+.digikabu-dark-blue .digikabu-particle-1 {
+  width: 480px; height: 480px;
+  background: radial-gradient(circle, rgba(88,166,255,0.1) 0%, rgba(88,166,255,0.03) 40%, transparent 70%);
+  filter: blur(80px);
+  top: -12%; left: -8%;
+  animation-duration: 26s; opacity: 1;
+}
+.digikabu-dark-blue .digikabu-particle-2 {
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(30,64,175,0.12) 0%, rgba(30,64,175,0.04) 40%, transparent 70%);
+  filter: blur(90px);
+  top: 22%; right: -6%;
+  animation-duration: 32s; animation-delay: -9s; opacity: 1;
+}
+.digikabu-dark-blue .digikabu-particle-3 {
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(48,105,255,0.12) 0%, rgba(48,105,255,0.04) 40%, transparent 70%);
+  filter: blur(70px);
+  bottom: 12%; left: 12%;
+  animation-duration: 20s; animation-delay: -15s; opacity: 1;
+}
+.digikabu-dark-blue .digikabu-particle-4 {
+  width: 420px; height: 420px;
+  background: radial-gradient(circle, rgba(88,166,255,0.05) 0%, transparent 60%);
+  filter: blur(100px);
+  bottom: -8%; right: 8%;
+  animation-duration: 27s; animation-delay: -6s; opacity: 1;
+}
+.digikabu-dark-blue .digikabu-particle-5 {
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(88,166,255,0.13) 0%, transparent 60%);
+  filter: blur(50px);
+  top: 50%; left: 35%;
+  animation-duration: 17s; animation-delay: -11s; opacity: 0.7;
+}
+.digikabu-dark-blue .digikabu-particle-6 {
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(30,64,175,0.09) 0%, transparent 60%);
+  filter: blur(85px);
+  top: 68%; right: 20%;
+  animation-duration: 30s; animation-delay: -19s; opacity: 1;
 }
 
-/* ── Base ─────────────────────────────────────────── */
-body.digikabu-dark { color: #e0e0e0 !important; background: transparent !important; }
-body.digikabu-dark-blue { color: #c9d1d9 !important; background: transparent !important; }
-
-/* ── Navbar ───────────────────────────────────────── */
-body.digikabu-dark .navbar-inverse {
-  background: linear-gradient(to bottom, #3c3c3c 0%, #222 100%) !important;
-  border-color: #080808 !important;
-  border-radius: 0 !important;
+/* Smooth organic drift — larger movement range for glass feel */
+@keyframes dg-orb-drift {
+  0%   { transform: translate(0, 0) scale(1); }
+  15%  { transform: translate(25px, -35px) scale(1.05); }
+  30%  { transform: translate(-15px, 20px) scale(0.96); }
+  50%  { transform: translate(30px, 15px) scale(1.08); }
+  65%  { transform: translate(-20px, -20px) scale(0.94); }
+  80%  { transform: translate(10px, 30px) scale(1.03); }
+  100% { transform: translate(0, 0) scale(1); }
 }
 
-body.digikabu-dark-blue .navbar-inverse {
-  background: linear-gradient(to bottom, #21262d 0%, #161b22 100%) !important;
-  border-color: #21262d !important;
-  border-radius: 0 !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
-}
 
-body.digikabu-dark .navbar-inverse .navbar-nav > li > a,
-body.digikabu-dark .navbar-inverse .navbar-brand { color: #9d9d9d !important; }
+/* ══════════════════════════════════════════════════════════
+   SELECTION & FOCUS
+   ══════════════════════════════════════════════════════════ */
 
-body.digikabu-dark-blue .navbar-inverse .navbar-nav > li > a,
-body.digikabu-dark-blue .navbar-inverse .navbar-brand { color: #c9d1d9 !important; }
-
-body.digikabu-dark .navbar-inverse .navbar-nav > li > a:hover,
-body.digikabu-dark .navbar-inverse .navbar-brand:hover { color: #ffffff !important; }
-
-body.digikabu-dark-blue .navbar-inverse .navbar-nav > li > a:hover { color: #58a6ff !important; background-color: rgba(88,166,255,0.1) !important; }
-body.digikabu-dark-blue .navbar-inverse .navbar-brand:hover { color: #58a6ff !important; }
-
-body.digikabu-dark .navbar-inverse .navbar-nav > .active > a,
-body.digikabu-dark .navbar-inverse .navbar-nav > .active > a:hover,
-body.digikabu-dark .navbar-inverse .navbar-nav > .active > a:focus {
-  color: #ffffff !important;
-  background: linear-gradient(to bottom, #080808, #0f0f0f) !important;
-  box-shadow: inset 0 3px 9px rgba(0,0,0,0.25) !important;
-}
-
-body.digikabu-dark-blue .navbar-inverse .navbar-nav > .active > a,
-body.digikabu-dark-blue .navbar-inverse .navbar-nav > .active > a:hover {
-  color: #58a6ff !important;
-  background: linear-gradient(to bottom, #0d1117, #161b22) !important;
-  box-shadow: inset 0 3px 9px rgba(0,0,0,0.35) !important;
-}
-
-/* Navbar container exception */
-body.digikabu-dark .navbar .container,
-body.digikabu-dark-blue .navbar .container {
-  background-color: transparent !important;
-  backdrop-filter: none !important;
-  border: none !important;
-  border-radius: 0 !important;
-  margin-top: 0 !important;
-  padding: 15px !important;
-}
-
-/* ── Containers ───────────────────────────────────── */
-body.digikabu-dark .container:not(.navbar .container),
-body.digikabu-dark .body-content {
-  background-color: transparent !important;
-  color: #e0e0e0 !important;
-  backdrop-filter: blur(10px);
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.06);
-  margin-top: 20px;
-  padding: 30px;
-}
-
-body.digikabu-dark-blue .container:not(.navbar .container),
-body.digikabu-dark-blue .body-content {
-  background-color: transparent !important;
-  color: #c9d1d9 !important;
-  backdrop-filter: blur(10px);
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.06);
-  margin-top: 20px;
-  padding: 30px;
-}
-
-/* ── Typography ───────────────────────────────────── */
-body.digikabu-dark h1, body.digikabu-dark h2, body.digikabu-dark h3,
-body.digikabu-dark h4, body.digikabu-dark h5, body.digikabu-dark h6 {
-  color: #ffffff !important;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-body.digikabu-dark-blue h1, body.digikabu-dark-blue h2, body.digikabu-dark-blue h3,
-body.digikabu-dark-blue h4, body.digikabu-dark-blue h5, body.digikabu-dark-blue h6 {
-  color: #58a6ff !important;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-body.digikabu-dark label { color: #cccccc !important; }
-body.digikabu-dark-blue label { color: #8b949e !important; }
-
-body.digikabu-dark footer { background-color: transparent !important; color: #cccccc !important; border-top: 1px solid rgba(61,61,61,0.3) !important; }
-body.digikabu-dark-blue footer { background-color: transparent !important; color: #8b949e !important; border-top: 1px solid rgba(33,38,45,0.3) !important; }
-
-body.digikabu-dark hr { border-color: rgba(61,61,61,0.5) !important; }
-body.digikabu-dark-blue hr { border-color: rgba(33,38,45,0.5) !important; }
-
-/* ── Forms ────────────────────────────────────────── */
-body.digikabu-dark .form-control {
-  background-color: rgba(45,45,45,0.8) !important;
-  border-color: #3d3d3d !important;
-  color: #e0e0e0 !important;
-  border-radius: 8px;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease !important;
-}
-
-body.digikabu-dark .form-control:focus {
-  background-color: rgba(45,45,45,0.95) !important;
-  border-color: #4db8ff !important;
-  border-width: 2px !important;
-  color: #ffffff !important;
-  box-shadow: 0 0 0 4px rgba(77,184,255,0.2), 0 4px 20px rgba(77,184,255,0.3) !important;
-  outline: none !important;
-}
-
-body.digikabu-dark-blue .form-control {
-  background-color: rgba(22,27,34,0.8) !important;
-  border-color: #21262d !important;
-  color: #c9d1d9 !important;
-  border-radius: 8px;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease !important;
-}
-
-body.digikabu-dark-blue .form-control:focus {
-  background-color: rgba(22,27,34,0.95) !important;
-  border-color: #58a6ff !important;
-  border-width: 2px !important;
-  color: #ffffff !important;
-  box-shadow: 0 0 0 4px rgba(88,166,255,0.2), 0 4px 20px rgba(88,166,255,0.3) !important;
-  outline: none !important;
-}
-
-/* ── Buttons ──────────────────────────────────────── */
-body.digikabu-dark .btn-primary {
-  background: linear-gradient(135deg, #0d7377, #14a085) !important;
-  border: none !important;
-  border-radius: 8px;
-  font-weight: 500;
-  color: white !important;
-  transition: all 0.3s ease !important;
-}
-body.digikabu-dark .btn-primary:hover { transform: translateY(-2px) !important; box-shadow: 0 8px 25px rgba(13,115,119,0.4) !important; }
-
-body.digikabu-dark-blue .btn-primary {
-  background: linear-gradient(135deg, #1e40af, #58a6ff) !important;
-  border: none !important;
-  border-radius: 8px;
-  font-weight: 500;
-  color: white !important;
-  transition: all 0.3s ease !important;
-  box-shadow: 0 4px 15px rgba(88,166,255,0.25) !important;
-}
-body.digikabu-dark-blue .btn-primary:hover { transform: translateY(-2px) !important; box-shadow: 0 8px 30px rgba(88,166,255,0.35) !important; }
-
-body.digikabu-dark .btn-default {
-  background-color: rgba(45,45,45,0.9) !important;
-  background-image: none !important;
-  border: 1px solid rgba(77,184,255,0.4) !important;
-  color: #4db8ff !important;
-  border-radius: 6px !important;
-  backdrop-filter: blur(10px) !important;
-  transition: all 0.3s ease !important;
-  text-shadow: none !important;
-}
-body.digikabu-dark .btn-default:hover { background-color: rgba(77,184,255,0.1) !important; transform: translateY(-1px) !important; }
-
-body.digikabu-dark-blue .btn-default {
-  background-color: rgba(22,27,34,0.9) !important;
-  background-image: none !important;
-  border: 1px solid rgba(88,166,255,0.4) !important;
-  color: #58a6ff !important;
-  border-radius: 6px !important;
-  backdrop-filter: blur(10px) !important;
-  transition: all 0.3s ease !important;
-  text-shadow: none !important;
-}
-body.digikabu-dark-blue .btn-default:hover { background-color: rgba(88,166,255,0.1) !important; transform: translateY(-1px) !important; }
-
-/* ── Links ────────────────────────────────────────── */
-body.digikabu-dark .body-content a { color: #4db8ff !important; text-decoration: none; transition: all 0.2s ease !important; }
-body.digikabu-dark .body-content a:hover { color: #66c2ff !important; text-shadow: 0 0 8px rgba(77,184,255,0.5) !important; }
-
-body.digikabu-dark-blue .body-content a { color: #58a6ff !important; text-decoration: none; transition: all 0.2s ease !important; }
-body.digikabu-dark-blue .body-content a:hover { color: #79c0ff !important; text-shadow: 0 0 8px rgba(88,166,255,0.5) !important; }
-
-/* Fix blue inline color spans */
-body.digikabu-dark span[style*="color:blue"], body.digikabu-dark span[style*="color: blue"] { color: #4db8ff !important; }
-body.digikabu-dark-blue span[style*="color:blue"], body.digikabu-dark-blue span[style*="color: blue"] { color: #58a6ff !important; }
-
-/* ── SVG Stundenplan ──────────────────────────────── */
-body.digikabu-dark .reg { fill: rgba(45,45,45,0.8) !important; stroke: #3d3d3d !important; }
-body.digikabu-dark-blue .reg { fill: rgba(22,27,34,0.8) !important; stroke: #21262d !important; }
-
-body.digikabu-dark .weekdayToday { fill: #1d4ed8 !important; }
-body.digikabu-dark-blue .weekdayToday { fill: #1e40af !important; }
-
-body.digikabu-dark .text2 { fill: #e0e0e0 !important; font-weight: 500; }
-body.digikabu-dark-blue .text2 { fill: #c9d1d9 !important; font-weight: 500; }
-
-body.digikabu-dark .std { fill: rgba(45,45,45,0.9) !important; stroke: rgba(77,184,255,0.3) !important; }
-body.digikabu-dark-blue .std { fill: rgba(22,27,34,0.9) !important; stroke: rgba(88,166,255,0.3) !important; }
-
-body.digikabu-dark .regStd { fill: #0d7377 !important; }
-body.digikabu-dark-blue .regStd { fill: #238636 !important; }
-
-body.digikabu-dark .vertretStd { fill: #f97316 !important; }
-body.digikabu-dark-blue .vertretStd { fill: #ea580c !important; }
-
-body.digikabu-dark .sp_small, body.digikabu-dark .sp { fill: #ffffff !important; font-weight: 500; }
-body.digikabu-dark-blue .sp_small, body.digikabu-dark-blue .sp { fill: #f0f6fc !important; font-weight: 500; }
-
-body.digikabu-dark .vhinweis_vertr { fill: #cccccc !important; }
-body.digikabu-dark-blue .vhinweis_vertr { fill: #8b949e !important; }
-
-body.digikabu-dark .inhalt { fill: #e0e0e0 !important; }
-body.digikabu-dark-blue .inhalt { fill: #c9d1d9 !important; }
-
-body.digikabu-dark svg[style*="background-color:#F9F9F9"] {
-  background-color: rgba(26,26,26,0.8) !important;
-  border-radius: 8px;
-  border: 1px solid rgba(77,184,255,0.2);
-}
-
-body.digikabu-dark-blue svg[style*="background-color:#F9F9F9"] {
-  background-color: rgba(15,20,25,0.8) !important;
-  border-radius: 8px;
-  border: 1px solid rgba(88,166,255,0.2);
-}
-
-/* ── Saplan Table ─────────────────────────────────── */
-body.digikabu-dark .table.saplan { background-color: rgba(45,45,45,0.9) !important; border: 1px solid rgba(77,184,255,0.2) !important; border-radius: 6px !important; backdrop-filter: blur(10px) !important; }
-body.digikabu-dark-blue .table.saplan { background-color: rgba(22,27,34,0.9) !important; border: 1px solid rgba(88,166,255,0.2) !important; border-radius: 6px !important; backdrop-filter: blur(10px) !important; }
-
-body.digikabu-dark .table.saplan thead td { background-color: #0d7377 !important; color: #ffffff !important; font-weight: 600 !important; }
-body.digikabu-dark-blue .table.saplan thead td { background-color: #1e40af !important; color: #ffffff !important; font-weight: 600 !important; }
-body.digikabu-dark-blue .table.saplan thead td h4 { color: #ffffff !important; margin: 0 !important; text-shadow: none !important; }
-
-body.digikabu-dark .table.saplan tbody tr { background-color: rgba(45,45,45,0.7) !important; color: #e0e0e0 !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; }
-body.digikabu-dark-blue .table.saplan tbody tr { background-color: rgba(22,27,34,0.7) !important; color: #c9d1d9 !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; }
-
-body.digikabu-dark .table.saplan tbody tr.feiertag { background-color: rgba(220,38,38,0.25) !important; color: #fca5a5 !important; border-left: 3px solid #dc2626 !important; }
-body.digikabu-dark-blue .table.saplan tbody tr.feiertag { background-color: rgba(185,28,28,0.25) !important; color: #fca5a5 !important; border-left: 3px solid #b91c1c !important; }
-
-body.digikabu-dark .table.saplan tbody tr.heute { background-color: rgba(77,184,255,0.25) !important; color: #66c2ff !important; border-left: 3px solid #4db8ff !important; box-shadow: 0 0 8px rgba(77,184,255,0.15) !important; }
-body.digikabu-dark-blue .table.saplan tbody tr.heute { background-color: rgba(88,166,255,0.25) !important; color: #79c0ff !important; border-left: 3px solid #58a6ff !important; box-shadow: 0 0 8px rgba(88,166,255,0.15) !important; }
-
-body.digikabu-dark .table.saplan tbody tr.keinunterr { background-color: rgba(107,114,128,0.25) !important; color: #9ca3af !important; border-left: 3px solid #6b7280 !important; }
-body.digikabu-dark-blue .table.saplan tbody tr.keinunterr { background-color: rgba(75,85,99,0.25) !important; color: #9ca3af !important; border-left: 3px solid #4b5563 !important; }
-
-body.digikabu-dark .table.saplan td { border-top: none !important; padding: 6px 8px !important; vertical-align: middle !important; }
-body.digikabu-dark-blue .table.saplan td { border-top: none !important; padding: 6px 8px !important; vertical-align: middle !important; }
-
-body.digikabu-dark .table.saplan tbody tr:hover { background-color: rgba(77,184,255,0.1) !important; transition: background-color 0.2s ease !important; }
-body.digikabu-dark-blue .table.saplan tbody tr:hover { background-color: rgba(88,166,255,0.1) !important; transition: background-color 0.2s ease !important; }
-
-/* ── Responsive ───────────────────────────────────── */
-@media (max-width: 768px) {
-  .digikabu-particle { display: none; }
-  body.digikabu-dark .container:not(.navbar .container),
-  body.digikabu-dark-blue .container:not(.navbar .container) { margin: 10px; padding: 20px; }
-}
+.digikabu-dark ::selection, .digikabu-dark-blue ::selection { background: var(--dg-accent-soft) !important; color: var(--dg-accent) !important; }
+.digikabu-dark *:focus-visible, .digikabu-dark-blue *:focus-visible { outline: 2px solid var(--dg-accent) !important; outline-offset: 2px !important; border-radius: 4px !important; }

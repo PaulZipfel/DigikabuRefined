@@ -1,12 +1,16 @@
+// src/popup/App.tsx
+
 import React, { useEffect, useState, useCallback } from 'react'
-import type { DigikabuSettings, Theme } from '../shared/types'
+import type { DigikabuSettings, Theme, BackgroundEffect } from '../shared/types'
 import { getSettings, saveSettings } from '../shared/storage'
 import ThemeSection from './components/ThemeSection'
+import BackgroundSection from './components/BackgroundSection'
 import AutoLoginSection from './components/AutoLoginSection'
 import Header from './components/Header'
 import Toast from './components/Toast'
 
-export type ToastState = { message: string; type: 'success' | 'error' | 'info' } | null
+export type ToastInfo = { message: string; type: 'success' | 'error' | 'info' }
+export type ToastState = ToastInfo | null
 
 export default function App() {
   const [settings, setSettings] = useState<DigikabuSettings | null>(null)
@@ -27,10 +31,25 @@ export default function App() {
     }
   }
 
-  const showToast = useCallback((message: string, type: ToastState['type'] = 'success') => {
+  const showToast = useCallback((message: string, type: ToastInfo['type'] = 'success') => {
     setToast({ message, type })
     setTimeout(() => setToast(null), 3000)
   }, [])
+
+  // Send updated settings to the active tab
+  async function notifyTab(theme?: Theme) {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+      if (tab?.id) {
+        await chrome.tabs.sendMessage(tab.id, {
+          action: 'changeTheme',
+          theme: theme ?? settings?.theme,
+        })
+      }
+    } catch {
+      // Not on digikabu or tab not available
+    }
+  }
 
   async function handleThemeChange(theme: Theme) {
     if (!settings || theme === settings.theme) return
@@ -38,12 +57,8 @@ export default function App() {
     setSettings(next)
     await saveSettings({ theme })
 
-    // Notify active tab
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-      if (tab?.id) {
-        await chrome.tabs.sendMessage(tab.id, { action: 'changeTheme', theme })
-      }
+      await notifyTab(theme)
     } catch {
       showToast('Theme gespeichert – Seite neu laden', 'info')
       return
@@ -54,6 +69,23 @@ export default function App() {
     } else {
       showToast(`${theme === 'dark-blue' ? 'Dark Blue' : 'Dark'} Theme aktiviert ✨`, 'success')
     }
+  }
+
+  async function handleBackgroundChange(effect: BackgroundEffect) {
+    if (!settings || effect === settings.backgroundEffect) return
+    const next = { ...settings, backgroundEffect: effect }
+    setSettings(next)
+    await saveSettings({ backgroundEffect: effect })
+
+    // Notify tab to re-render background
+    await notifyTab()
+
+    const labels: Record<BackgroundEffect, string> = {
+      lightpillar: 'Light Pillar',
+      floatinglines: 'Floating Lines',
+      none: 'Glassmorphism',
+    }
+    showToast(`Hintergrund: ${labels[effect]} ✨`, 'success')
   }
 
   async function handleAutoLoginToggle(enabled: boolean) {
@@ -83,6 +115,8 @@ export default function App() {
     )
   }
 
+  const isDarkTheme = settings.theme !== 'standard'
+
   return (
     <div className="popup-root">
       <div className="bg-orbs">
@@ -98,6 +132,14 @@ export default function App() {
           <ThemeSection
             currentTheme={settings.theme}
             onThemeChange={handleThemeChange}
+          />
+
+          <div className="divider" />
+
+          <BackgroundSection
+            current={settings.backgroundEffect}
+            onChange={handleBackgroundChange}
+            disabled={!isDarkTheme}
           />
 
           <div className="divider" />

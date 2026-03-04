@@ -25,7 +25,7 @@ export default function Header({ theme, isOnDigikabu }: Props) {
         </div>
         <div className="logo-text">
           <h1>Digikabu</h1>
-          <span>Enhancer</span>
+          <span>Refined</span>
         </div>
       </div>
       <div className={`status-badge status-badge--${theme === 'standard' ? 'off' : 'on'}`}>

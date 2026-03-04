@@ -61,8 +61,6 @@ async function getViteConfig(watchMode) {
 }
 
 async function buildAll() {
-  console.log('\n🔨 Digikabu Enhancer Build\n')
-
   rmSync(resolve(__dirname, 'dist'), { recursive: true, force: true })
   mkdirSync(resolve(__dirname, 'dist'), { recursive: true })
 

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Advanced Digikabu",
+  "name": "DiGiKaBu Refined",
   "version": "2.0.0",
   "description": "Modernisiert Digikabu mit React, Themes, Auto-Login und Live-Stundenplan-Widget",
   "permissions": ["storage", "activeTab"],
@@ -22,7 +22,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Digikabu Enhancer",
+    "default_title": "DiGiKaBu Refined",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png"

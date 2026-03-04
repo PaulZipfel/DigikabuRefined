@@ -1,24 +1,32 @@
+// src/content/index.tsx
+// Main content script entry — mounts theme, background effects, and time widget
+
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { getSettings, onSettingsChange } from '../shared/storage'
 import type { DigikabuSettings } from '../shared/types'
-import { applyThemeClass, removeThemeClasses, createAmbientParticles } from './enhancer'
+import { applyThemeClass, removeThemeClasses, createAmbientParticles, observeAndEnhance } from './enhancer'
 import TimeWidget from './components/TimeWidget'
 import SideDialog from './components/SideDialog'
+import BackgroundEffect from './components/BackgroundEffect'
 
-// Prevent double-init
+// ── Prevent double-init ─────────────────────────────────
 const win = window as any
 if (win.__digikabuEnhancerLoaded) {
   throw new Error('Already loaded')
 }
 win.__digikabuEnhancerLoaded = true
 
+// ── State ───────────────────────────────────────────────
 let settings: DigikabuSettings | null = null
 let timeWidgetRoot: ReturnType<typeof createRoot> | null = null
 let timeWidgetContainer: HTMLElement | null = null
 let shadowRoot: ShadowRoot | null = null
 let unsubscribe: (() => void) | null = null
+let bgEffectRoot: ReturnType<typeof createRoot> | null = null
+let bgEffectContainer: HTMLElement | null = null
 
+// ── Init ────────────────────────────────────────────────
 async function init() {
   settings = await getSettings()
   applySettings(settings)
@@ -31,36 +39,83 @@ async function init() {
   setupMessageListener()
 }
 
+// ── Apply settings ──────────────────────────────────────
 function applySettings(s: DigikabuSettings) {
   removeThemeClasses()
 
   if (s.theme !== 'standard') {
     applyThemeClass(s.theme)
-    createAmbientParticles()
+    applyBackground(s)
     mountTimeWidget(s)
   } else {
     removeTimeWidget()
+    removeBackgroundEffect()
     removeAmbientParticles()
   }
 }
 
+// ── Background: WebGL (React) or CSS glassmorphism ──────
+function applyBackground(s: DigikabuSettings) {
+  if (s.backgroundEffect === 'none') {
+    // CSS-only glassmorphism ambient — no React/WebGL needed
+    removeBackgroundEffect()
+    createAmbientParticles()
+  } else {
+    // React-based WebGL background (LightPillar or FloatingLines)
+    removeAmbientParticles()
+    mountBackgroundEffect(s)
+  }
+}
+
+function mountBackgroundEffect(s: DigikabuSettings) {
+  removeBackgroundEffect()
+
+  if (s.theme === 'standard') return
+
+  bgEffectContainer = document.createElement('div')
+  bgEffectContainer.id = '__digikabu-bg-host'
+  bgEffectContainer.style.cssText = 'position:fixed;inset:0;z-index:-1;pointer-events:none;'
+
+  const shadow = bgEffectContainer.attachShadow({ mode: 'open' })
+  const mountPoint = document.createElement('div')
+  mountPoint.style.cssText = 'width:100%;height:100%;position:fixed;inset:0;'
+  shadow.appendChild(mountPoint)
+
+  document.body.prepend(bgEffectContainer)
+
+  bgEffectRoot = createRoot(mountPoint)
+  bgEffectRoot.render(
+    <BackgroundEffect theme={s.theme} effect={s.backgroundEffect} />
+  )
+}
+
+function removeBackgroundEffect() {
+  if (bgEffectRoot) {
+    try { bgEffectRoot.unmount() } catch { /* ignore */ }
+    bgEffectRoot = null
+  }
+  document.getElementById('__digikabu-bg-host')?.remove()
+  bgEffectContainer = null
+}
+
+function removeAmbientParticles() {
+  document.getElementById('__digikabu-ambient')?.remove()
+}
+
+// ── TimeWidget ──────────────────────────────────────────
 function mountTimeWidget(s: DigikabuSettings) {
   const url = window.location.href
 
-  // Only show on relevant pages
-  if (!url.includes('/Main') && !url.includes('/Stundenplan')) {
-    return
-  }
+  if (!url.includes('/Main') && !url.includes('/Stundenplan')) return
 
   // Find injection point
   let anchor: Element | null = null
-  let insertMode: 'before' | 'after' | 'prepend' = 'after'
+  let insertMode: 'before' | 'after' = 'after'
 
   if (url.includes('/Stundenplan')) {
     anchor = document.getElementById('stdplanheading')
     insertMode = 'after'
   } else if (url.includes('/Main')) {
-    // Try "Aktuelle Termine" heading first
     const headings = Array.from(document.querySelectorAll('h3'))
     for (const h of headings) {
       if (h.textContent?.includes('Aktuelle Termine')) {
@@ -69,7 +124,6 @@ function mountTimeWidget(s: DigikabuSettings) {
         break
       }
     }
-    // Fallback: after nav form
     if (!anchor) {
       const form = document.querySelector('form[action="/Main"]')
       if (form) { anchor = form; insertMode = 'after' }
@@ -78,34 +132,27 @@ function mountTimeWidget(s: DigikabuSettings) {
 
   if (!anchor) return
 
-  // Remove existing widget
   removeTimeWidget()
 
-  // Create host container
   timeWidgetContainer = document.createElement('div')
   timeWidgetContainer.id = '__digikabu-widget-host'
   timeWidgetContainer.style.cssText = 'display: contents;'
 
-  // Shadow DOM for style isolation
   shadowRoot = timeWidgetContainer.attachShadow({ mode: 'open' })
 
-  // Inject into DOM
   if (insertMode === 'before') {
     anchor.parentNode?.insertBefore(timeWidgetContainer, anchor)
-  } else if (insertMode === 'after') {
+  } else {
     anchor.parentNode?.insertBefore(timeWidgetContainer, anchor.nextSibling)
   }
 
-  // Create React root inside shadow DOM
   const mountPoint = document.createElement('div')
   shadowRoot.appendChild(mountPoint)
-
   timeWidgetRoot = createRoot(mountPoint)
 
   const isSplit = hasSplitSchedule()
 
   if (isSplit && !s.sidePreference) {
-    // Show side selection dialog first
     timeWidgetRoot.render(
       <SideDialog
         theme={s.theme}
@@ -136,16 +183,12 @@ function removeTimeWidget() {
     try { timeWidgetRoot.unmount() } catch { /* ignore */ }
     timeWidgetRoot = null
   }
-  const existing = document.getElementById('__digikabu-widget-host')
-  if (existing) existing.remove()
+  document.getElementById('__digikabu-widget-host')?.remove()
   timeWidgetContainer = null
   shadowRoot = null
 }
 
-function removeAmbientParticles() {
-  document.getElementById('__digikabu-ambient')?.remove()
-}
-
+// ── Message listener (popup <-> content) ────────────────
 function setupMessageListener() {
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg.action === 'changeTheme') {
@@ -171,7 +214,7 @@ function setupMessageListener() {
   })
 }
 
-// Run init when DOM is ready
+// ── Start ───────────────────────────────────────────────
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init)
 } else {

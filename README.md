@@ -1,4 +1,4 @@
-# Advanced Digikabu Enhancer v2.0 — React Edition
+# Advanced Digikabu Refined v2.0 — React Edition
 
 Komplett neu aufgebaut mit React + TypeScript + Vite.
 
