@@ -189,6 +189,25 @@
   border-radius: 4px;
 }
 
+.digikabu-dark div[style*="width:300px"],
+.digikabu-dark-blue div[style*="width:300px"] {
+  display: flex !important;
+  align-items: flex-start !important;
+  margin-top: 16px !important;
+}
+
+.digikabu-dark div[style*="width:300px"] > svg[width="40"],
+.digikabu-dark-blue div[style*="width:300px"] > svg[width="40"] {
+  height: 600px !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+}
+
+.digikabu-dark div[style*="width:300px"] > svg:not([width="40"]),
+.digikabu-dark-blue div[style*="width:300px"] > svg:not([width="40"]) {
+  flex: 1 !important;
+}
+
 .digikabu-dark .hidden-xs,
 .digikabu-dark-blue .hidden-xs {
   position: relative !important;

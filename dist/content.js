@@ -7291,9 +7291,8 @@ var DigikabuContent = (() => {
       "use strict";
       SETTINGS_KEY = "digikabu-settings-v2";
       DEFAULT_SETTINGS = {
-        theme: "standard",
-        backgroundEffect: "lightpillar",
-        // Default: LightPillar when dark mode active
+        theme: "dark-blue",
+        backgroundEffect: "floatinglines",
         autoLogin: false,
         sidePreference: null
       };

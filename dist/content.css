@@ -1,13 +1,5 @@
-/* ============================================================
-   Digikabu Enhancer — Content Styles
-   Injected into digikabu.de via Chrome Extension
-   Supports: .digikabu-dark  |  .digikabu-dark-blue
-   NOTE: Navbar is dark-themed but layout preserved.
-   ============================================================ */
-
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* ── Shared Custom Properties ─────────────────────────────── */
 .digikabu-dark,
 .digikabu-dark-blue {
   --dg-font: 'Outfit', system-ui, sans-serif;
@@ -17,7 +9,6 @@
   --dg-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Dark (Cyan) Theme — TRUE BLACK */
 .digikabu-dark {
   --dg-bg:             #080808;
   --dg-bg-2:           #0e0e0e;
@@ -37,7 +28,6 @@
   --dg-glow:           0 0 40px rgba(77, 184, 255, 0.08);
 }
 
-/* Dark Blue (GitHub) Theme */
 .digikabu-dark-blue {
   --dg-bg:             #0d1117;
   --dg-bg-2:           #161b22;
@@ -57,18 +47,11 @@
   --dg-glow:           0 0 40px rgba(88, 166, 255, 0.06);
 }
 
-
-/* ══════════════════════════════════════════════════════════
-   GLOBAL PAGE RESET
-   ══════════════════════════════════════════════════════════ */
-
-/* Font override — exclude glyphicons (they need their icon font) */
 .digikabu-dark *:not(.glyphicon):not([class*="glyphicon-"]):not([class*="fa-"]):not(.fa),
 .digikabu-dark-blue *:not(.glyphicon):not([class*="glyphicon-"]):not([class*="fa-"]):not(.fa) {
   font-family: var(--dg-font) !important;
 }
 
-/* Explicitly restore Glyphicon font */
 .digikabu-dark .glyphicon,
 .digikabu-dark [class*="glyphicon-"],
 .digikabu-dark-blue .glyphicon,
@@ -76,7 +59,6 @@
   font-family: 'Glyphicons Halflings' !important;
 }
 
-/* Bigger base font */
 .digikabu-dark,
 .digikabu-dark-blue {
   font-size: 16px !important;
@@ -97,11 +79,6 @@
     var(--dg-bg) !important;
   color: var(--dg-text) !important;
 }
-
-
-/* ══════════════════════════════════════════════════════════
-   NAVIGATION BAR — Dark glass, original layout preserved
-   ══════════════════════════════════════════════════════════ */
 
 .digikabu-dark .navbar,
 .digikabu-dark .navbar-default,
@@ -145,7 +122,6 @@
   border-radius: var(--dg-radius-sm) !important;
 }
 
-/* Navbar text (like "Paul Zipfel (FWI2)") */
 .digikabu-dark .navbar-text,
 .digikabu-dark .navbar-default .navbar-text,
 .digikabu-dark-blue .navbar-text,
@@ -154,7 +130,6 @@
   font-weight: 600 !important;
 }
 
-/* Mobile toggle */
 .digikabu-dark .navbar-toggle,
 .digikabu-dark-blue .navbar-toggle {
   border-color: var(--dg-border) !important;
@@ -164,7 +139,6 @@
   background-color: var(--dg-text) !important;
 }
 
-/* Small text under logo */
 .digikabu-dark .navbar small,
 .digikabu-dark .navbar .small,
 .digikabu-dark-blue .navbar small,
@@ -172,13 +146,6 @@
   color: var(--dg-text-muted) !important;
 }
 
-
-/* ══════════════════════════════════════════════════════════
-   MAIN CONTENT & CONTAINERS
-   (Navbar is NOT touched — original BSZ header preserved)
-   ══════════════════════════════════════════════════════════ */
-
-/* ── Z-Index Stacking: Content ABOVE LightPillar background ─ */
 .digikabu-dark .container,
 .digikabu-dark .container-fluid,
 .digikabu-dark-blue .container,
@@ -187,7 +154,6 @@
   z-index: 1 !important;
 }
 
-/* Stundenplan page wrapper */
 .digikabu-dark #stdplan,
 .digikabu-dark #umgebung,
 .digikabu-dark-blue #stdplan,
@@ -195,7 +161,7 @@
   position: relative !important;
   z-index: 1 !important;
 }
-/* Frosted glass backdrop — ONLY weekly Stundenplan (has direct svg[width="20%"] children) */
+
 .digikabu-dark #umgebung:has(> svg[width="20%"]),
 .digikabu-dark-blue #umgebung:has(> svg[width="20%"]) {
   background: rgba(10, 10, 15, 0.5) !important;
@@ -206,7 +172,7 @@
   border: 1px solid var(--dg-border) !important;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4) !important;
 }
-/* Main page daily view — lighter glass on the SVG wrapper div */
+
 .digikabu-dark #umgebung .hidden-xs div[style*="width:300px"],
 .digikabu-dark-blue #umgebung .hidden-xs div[style*="width:300px"] {
   background: rgba(10, 10, 15, 0.5) !important;
@@ -216,21 +182,38 @@
   padding: 4px !important;
   border: 1px solid var(--dg-border) !important;
 }
-/* Time column (left sidebar, width=40) */
+
 .digikabu-dark #umgebung > svg[width="40"],
 .digikabu-dark-blue #umgebung > svg[width="40"] {
   background: rgba(255, 255, 255, 0.03) !important;
   border-radius: 4px;
 }
 
-/* Termine page timetable wrapper */
+.digikabu-dark div[style*="width:300px"],
+.digikabu-dark-blue div[style*="width:300px"] {
+  display: flex !important;
+  align-items: flex-start !important;
+  margin-top: 16px !important;
+}
+
+.digikabu-dark div[style*="width:300px"] > svg[width="40"],
+.digikabu-dark-blue div[style*="width:300px"] > svg[width="40"] {
+  height: 600px !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+}
+
+.digikabu-dark div[style*="width:300px"] > svg:not([width="40"]),
+.digikabu-dark-blue div[style*="width:300px"] > svg:not([width="40"]) {
+  flex: 1 !important;
+}
+
 .digikabu-dark .hidden-xs,
 .digikabu-dark-blue .hidden-xs {
   position: relative !important;
   z-index: 1 !important;
 }
 
-/* Navbar must sit on top */
 .digikabu-dark .navbar,
 .digikabu-dark .navbar-default,
 .digikabu-dark-blue .navbar,
@@ -247,7 +230,6 @@
   color: var(--dg-text) !important;
 }
 
-/* Glass panels */
 .digikabu-dark .panel,
 .digikabu-dark .panel-default,
 .digikabu-dark .card,
@@ -276,7 +258,6 @@
   color: var(--dg-text) !important;
 }
 
-/* Headings */
 .digikabu-dark h1, .digikabu-dark h2, .digikabu-dark h3,
 .digikabu-dark h4, .digikabu-dark h5, .digikabu-dark h6,
 .digikabu-dark-blue h1, .digikabu-dark-blue h2, .digikabu-dark-blue h3,
@@ -296,7 +277,6 @@
   margin-bottom: 16px !important;
 }
 
-/* Links */
 .digikabu-dark a,
 .digikabu-dark-blue a {
   color: var(--dg-accent) !important;
@@ -308,11 +288,6 @@
   opacity: 0.8 !important;
   text-decoration: underline !important;
 }
-
-
-/* ══════════════════════════════════════════════════════════
-   GLASSMORPHISM TABLE — "Aktuelle Termine" & all tables
-   ══════════════════════════════════════════════════════════ */
 
 .digikabu-dark table,
 .digikabu-dark .table,
@@ -332,7 +307,6 @@
   box-shadow: var(--dg-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
 
-/* Top glow line */
 .digikabu-dark table::before,
 .digikabu-dark-blue table::before {
   content: '' !important;

@@ -77,25 +77,28 @@ export function enhanceTermineTable() {
   console.log('[Digikabu] Termine table enhanced')
 }
 
-/**
- * Strips the inline background-color from the SVG timetable container.
- * CSS handles the rest via .reg, .std, .regStd, .entfStd etc.
- */
 export function enhanceSVGTimetable() {
-  // Find SVGs with inline background-color (the timetable container)
   const svgs = document.querySelectorAll<SVGSVGElement>('svg[style*="background-color"]')
   svgs.forEach((svg) => {
     svg.style.removeProperty('background-color')
     svg.style.background = 'transparent'
   })
 
-  // Also strip any inline font-family from tables
+  // Fix the time-label SVG: it has height=630 but first content starts at y=30.
+  // Setting viewBox="0 30 40 600" crops the empty 30px and maps the remaining
+  // 600px of content to the display area. CSS sets height:600px to match.
+  const timeLabelSvgs = document.querySelectorAll<SVGSVGElement>('svg[width="40"]')
+  timeLabelSvgs.forEach((svg) => {
+    svg.setAttribute('viewBox', '0 30 40 600')
+    svg.setAttribute('height', '600')
+  })
+
   const tables = document.querySelectorAll<HTMLTableElement>('table[style*="font-family"]')
   tables.forEach((table) => {
     table.style.removeProperty('font-family')
   })
 
-  if (svgs.length > 0) {
+  if (svgs.length > 0 || timeLabelSvgs.length > 0) {
     console.log('[Digikabu] SVG timetable enhanced')
   }
 }
@@ -109,6 +112,11 @@ export function observeAndEnhance() {
   enhanceTermineTable()
   enhanceSVGTimetable()
 
+  // Retry after a short delay — the Stundenplan SVG loads dynamically
+  // and may not be present on the first run
+  setTimeout(() => enhanceSVGTimetable(), 500)
+  setTimeout(() => enhanceSVGTimetable(), 1500)
+
   // Watch for dynamic content
   const observer = new MutationObserver((mutations) => {
     for (const m of mutations) {
@@ -117,7 +125,11 @@ export function observeAndEnhance() {
           if (node.querySelector?.('table.table-striped')) {
             enhanceTermineTable()
           }
-          if (node.querySelector?.('svg[style*="background-color"]') || node.tagName === 'svg') {
+          if (
+            node.querySelector?.('svg[style*="background-color"]') ||
+            node.querySelector?.('svg[width="40"]') ||
+            (node as any).tagName === 'svg'
+          ) {
             enhanceSVGTimetable()
           }
         }
