@@ -7255,7 +7255,6 @@ var DigikabuContent = (() => {
   __export(storage_exports, {
     DEFAULT_SETTINGS: () => DEFAULT_SETTINGS,
     getSettings: () => getSettings,
-    getTheme: () => getTheme,
     onSettingsChange: () => onSettingsChange,
     saveSettings: () => saveSettings
   });
@@ -7270,10 +7269,6 @@ var DigikabuContent = (() => {
   async function saveSettings(patch) {
     const current = await getSettings();
     await chrome.storage.local.set({ [SETTINGS_KEY]: { ...current, ...patch } });
-  }
-  async function getTheme() {
-    const s = await getSettings();
-    return s.theme;
   }
   function onSettingsChange(callback) {
     const listener = (changes) => {
@@ -7291,8 +7286,8 @@ var DigikabuContent = (() => {
       "use strict";
       SETTINGS_KEY = "digikabu-settings-v2";
       DEFAULT_SETTINGS = {
-        theme: "dark-blue",
-        backgroundEffect: "floatinglines",
+        theme: "standard",
+        backgroundEffect: "lightpillar",
         autoLogin: false,
         sidePreference: null
       };

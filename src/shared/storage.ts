@@ -1,10 +1,10 @@
-import type { DigikabuSettings, Theme } from './types'
+import type { DigikabuSettings } from './types'
 
 const SETTINGS_KEY = 'digikabu-settings-v2'
 
 export const DEFAULT_SETTINGS: DigikabuSettings = {
-  theme: 'dark-blue',
-  backgroundEffect: 'floatinglines',
+  theme: 'standard',
+  backgroundEffect: 'lightpillar',
   autoLogin: false,
   sidePreference: null,
 }
@@ -21,11 +21,6 @@ export async function getSettings(): Promise<DigikabuSettings> {
 export async function saveSettings(patch: Partial<DigikabuSettings>): Promise<void> {
   const current = await getSettings()
   await chrome.storage.local.set({ [SETTINGS_KEY]: { ...current, ...patch } })
-}
-
-export async function getTheme(): Promise<Theme> {
-  const s = await getSettings()
-  return s.theme
 }
 
 export function onSettingsChange(callback: (settings: DigikabuSettings) => void): () => void {
