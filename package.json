@@ -1,6 +1,6 @@
 {
   "name": "digikabu-enhancer",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Advanced Digikabu Chrome Extension mit React",
   "private": true,
   "type": "module",
