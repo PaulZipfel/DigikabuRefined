@@ -7405,7 +7405,15 @@ var DigikabuContent = (() => {
     tables.forEach((table) => {
       table.style.removeProperty("font-family");
     });
-    if (svgs.length > 0) console.log("[Digikabu] SVG timetable enhanced");
+    const timeSvgs = document.querySelectorAll('svg[width="40"]');
+    timeSvgs.forEach((svg) => {
+      const h = parseFloat(svg.getAttribute("height") || "630");
+      if (h > 600) {
+        svg.setAttribute("viewBox", "0 30 40 600");
+        svg.setAttribute("height", "600");
+      }
+    });
+    if (svgs.length > 0 || timeSvgs.length > 0) console.log("[Digikabu] SVG timetable enhanced");
   }
   function observeAndEnhance() {
     enhanceTermineTable();
