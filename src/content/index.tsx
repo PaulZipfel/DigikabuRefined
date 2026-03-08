@@ -15,7 +15,6 @@ import TimeWidget from './components/TimeWidget'
 import SideDialog from './components/SideDialog'
 import BackgroundEffect from './components/BackgroundEffect'
 
-// Verhindert doppelte Initialisierung falls Chrome das Script mehrfach injiziert
 const win = window as any
 if (win.__digikabuEnhancerLoaded) {
   throw new Error('Already loaded')
@@ -64,8 +63,6 @@ function applyBackground(s: DigikabuSettings) {
   }
 }
 
-// Mountet den WebGL-Effekt in einem Shadow DOM mit z-index: -1,
-// damit er hinter dem gesamten Seiteninhalt bleibt.
 function mountBackgroundEffect(s: DigikabuSettings) {
   removeBackgroundEffect()
   if (s.theme === 'standard') return
@@ -89,7 +86,7 @@ function mountBackgroundEffect(s: DigikabuSettings) {
 
 function removeBackgroundEffect() {
   if (bgEffectRoot) {
-    try { bgEffectRoot.unmount() } catch { /* ignore */ }
+    try { bgEffectRoot.unmount() } catch { }
     bgEffectRoot = null
   }
   document.getElementById('__digikabu-bg-host')?.remove()
@@ -100,9 +97,6 @@ function removeAmbientParticles() {
   document.getElementById('__digikabu-ambient')?.remove()
 }
 
-// Mountet das Widget in einem Shadow DOM direkt in den Seiteninhalt.
-// Auf /Stundenplan nach der Überschrift, auf /Main vor "Aktuelle Termine".
-// Bei geteiltem Stundenplan ohne gespeicherte Seite: erst SideDialog zeigen.
 function mountTimeWidget(s: DigikabuSettings) {
   const url = window.location.href
   if (!url.includes('/Main') && !url.includes('/Stundenplan')) return
@@ -111,7 +105,7 @@ function mountTimeWidget(s: DigikabuSettings) {
   let insertMode: 'before' | 'after' = 'after'
 
   if (url.includes('/Stundenplan')) {
-    anchor = document.getElementById('stdplanheading')
+    anchor = document.getElementById('stdplanheading') ?? document.querySelector('h2, h3')
     insertMode = 'after'
   } else if (url.includes('/Main')) {
     const headings = Array.from(document.querySelectorAll('h3'))
@@ -171,14 +165,13 @@ function mountTimeWidget(s: DigikabuSettings) {
   }
 }
 
-// Geteilter Stundenplan erkennbar an SVGs mit width="50%"
 function hasSplitSchedule(): boolean {
   return !!document.querySelector('svg[width="50%"]')
 }
 
 function removeTimeWidget() {
   if (timeWidgetRoot) {
-    try { timeWidgetRoot.unmount() } catch { /* ignore */ }
+    try { timeWidgetRoot.unmount() } catch { }
     timeWidgetRoot = null
   }
   document.getElementById('__digikabu-widget-host')?.remove()
@@ -186,7 +179,6 @@ function removeTimeWidget() {
   shadowRoot = null
 }
 
-// Empfängt Nachrichten vom Popup (Theme-Wechsel, Auto-Login-Toggle etc.)
 function setupMessageListener() {
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg.action === 'changeTheme') {

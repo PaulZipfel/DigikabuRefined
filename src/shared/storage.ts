@@ -14,7 +14,7 @@ import type { DigikabuSettings } from './types'
 const SETTINGS_KEY = 'digikabu-settings-v2'
 
 export const DEFAULT_SETTINGS: DigikabuSettings = {
-  theme: 'standard',
+  theme: 'dark',
   backgroundEffect: 'lightpillar',
   autoLogin: false,
   sidePreference: null,
