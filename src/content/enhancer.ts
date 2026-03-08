@@ -99,7 +99,7 @@ export function enhanceSVGTimetable() {
   const timeSvgs = document.querySelectorAll<SVGSVGElement>('svg[width="40"]')
   timeSvgs.forEach((svg) => {
     const parent = svg.parentElement
-    const isWeeklyView = !!svg.closest('#umgebung')
+    const isWeeklyView = svg.parentElement?.id === 'umgebung'
     const h = parseFloat(svg.getAttribute('height') || '630')
     if (!isWeeklyView && h > 600) {
       svg.setAttribute('viewBox', '0 30 40 600')
